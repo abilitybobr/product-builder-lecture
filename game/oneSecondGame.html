@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1초 클릭 - Reaction Click</title>
+    <style>
+        /* --- 기본 설정 --- */
+        :root {
+            --background-color: #0d0c1d;
+            --card-color: #161a33; /* Used for game description and stats */
+            --text-color: #e5e5e5;
+            --neon-blue: #00bfff;
+            --neon-pink: #ff00ff;
+            --neon-green: #39ff14;
+            --neon-yellow: #fdfd96;
+            
+            --glow-blue: rgba(0, 191, 255, 0.7);
+            --glow-pink: rgba(255, 0, 255, 0.7);
+            --glow-green: rgba(57, 255, 20, 0.7);
+            --glow-yellow: rgba(253, 253, 150, 0.7);
+
+            /* Game specific colors */
+            --state-ready-bg: #1a1a2e;
+            --state-signal-bg: #ffe082; /* Light yellow for signal */
+            --state-success-bg: #66bb6a; /* Green for success */
+            --state-fail-bg: #ef5350; /* Red for fail */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+                Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            overflow: hidden; /* Prevent scrollbars from showing when content overflows during transitions */
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ensure body takes full viewport height */
+            position: relative; /* For back button positioning */
+        }
+
+        /* --- Back to Main Button --- */
+        .back-to-main-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--neon-blue);
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 8px var(--glow-blue);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-to-main-button:hover {
+            background: var(--neon-blue);
+            color: var(--background-color);
+            box-shadow: 0 0 15px var(--glow-blue);
+            transform: translateY(-2px);
+        }
+
+        .back-to-main-button .arrow-icon {
+            font-size: 1.2em;
+        }
+
+        /* --- Game Container --- */
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        #mainText {
+            font-size: 4rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            color: var(--text-color);
+            text-shadow: 0 0 10px var(--glow-blue);
+            transition: all 0.2s ease;
+        }
+
+        #subText {
+            font-size: 1.5rem;
+            margin-top: 20px;
+            color: var(--text-color);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        /* --- Game Description --- */
+        #gameDescription {
+            margin-top: 40px;
+            padding: 25px;
+            background: var(--card-color);
+            border: 2px solid var(--neon-pink);
+            border-radius: 15px;
+            max-width: 500px;
+            box-shadow: 0 0 15px var(--glow-pink);
+        }
+
+        #gameDescription p {
+            margin: 10px 0;
+            font-size: 1rem;
+            color: var(--text-color);
+            line-height: 1.6;
+            text-shadow: 0 0 3px rgba(255, 0, 255, 0.3);
+        }
+
+        #gameDescription p:first-child {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--neon-pink);
+            text-shadow: 0 0 8px var(--glow-pink);
+        }
+
+        /* --- Stats Container --- */
+        #statsContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--card-color);
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px var(--glow-green);
+            border: 2px solid var(--neon-green);
+            font-size: 0.9rem;
+            z-index: 1000;
+        }
+
+        .stat-item {
+            margin: 5px 0;
+            color: var(--text-color);
+        }
+
+        .stat-label {
+            font-weight: bold;
+            color: var(--neon-green);
+            text-shadow: 0 0 5px var(--glow-green);
+        }
+
+        /* --- State-specific backgrounds and text --- */
+        .state-ready {
+            background-color: var(--background-color);
+        }
+        .state-ready #mainText { color: var(--neon-blue); text-shadow: 0 0 15px var(--glow-blue); }
+        .state-ready #subText { color: var(--neon-blue); text-shadow: 0 0 8px var(--glow-blue); }
+
+        .state-signal {
+            background-color: var(--state-signal-bg);
+        }
+        .state-signal #mainText { color: #000; text-shadow: none; }
+        .state-signal #subText { color: #000; text-shadow: none; }
+
+        .state-result-success {
+            background-color: var(--state-success-bg);
+        }
+        .state-result-success #mainText { color: #fff; text-shadow: 0 0 15px rgba(255,255,255,0.8); }
+        .state-result-success #subText { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
+
+        .state-result-fail {
+            background-color: var(--state-fail-bg);
+        }
+        .state-result-fail #mainText { color: #fff; text-shadow: 0 0 15px rgba(255,255,255,0.8); }
+        .state-result-fail #subText { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
+
+
+        /* --- 반응형 디자인 --- */
+        @media (max-width: 768px) {
+            #mainText {
+                font-size: 2.5rem;
+            }
+            #subText {
+                font-size: 1.2rem;
+            }
+            #gameDescription {
+                margin-top: 30px;
+                padding: 15px;
+                max-width: 90%;
+            }
+            #gameDescription p {
+                font-size: 0.9rem;
+                margin: 8px 0;
+            }
+            #gameDescription p:first-child {
+                font-size: 1.1rem;
+            }
+            #statsContainer {
+                top: 10px;
+                right: 10px;
+                padding: 10px 15px;
+                font-size: 0.8rem;
+            }
+            .back-to-main-button {
+                top: 10px;
+                left: 10px;
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #mainText {
+                font-size: 2rem;
+            }
+            #subText {
+                font-size: 1rem;
+            }
+            #gameDescription {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 메인 페이지로 돌아가는 버튼 -->
+    <a href="../index.html" class="back-to-main-button">
+        <span class="arrow-icon">&lt;</span> 메인으로
+    </a>
+
+    <div id="gameContainer" class="state-ready">
+        <div id="mainText">1초 클릭</div>
+        <div id="subText">화면을 클릭하여 시작하세요</div>
+        <div id="gameDescription">
+            <p>⚡ 반응속도 테스트 게임</p>
+            <p>"CLICK!" 신호가 나타나면 최대한 빠르게 클릭하세요</p>
+            <p>50ms~500ms 안에 클릭하면 성공!</p>
+        </div>
+    </div>
+
+    <div id="statsContainer">
+        <div class="stat-item"><span class="stat-label">최고 기록:</span> <span id="bestScore">-</span></div>
+        <div class="stat-item"><span class="stat-label">평균 (5회):</span> <span id="avgScore">-</span></div>
+        <div class="stat-item"><span class="stat-label">게임 횟수:</span> <span id="playCount">0</span></div>
+    </div>
+
+    <script>
+        // ========================================
+        // 게임 상태 정의
+        // ========================================
+        const STATE = {
+            READY: 'READY',      // 대기 상태
+            SIGNAL: 'SIGNAL',    // 클릭 신호 표시 상태
+            RESULT: 'RESULT'     // 결과 출력 상태
+        };
+
+        // ========================================
+        // 게임 변수
+        // ========================================
+        let currentState = STATE.READY;
+        let signalTime = 0;           // 신호가 표시된 시간
+        let readyTimeout = null;      // 대기 타이머
+        let recentScores = [];        // 최근 반응속도 기록 (최대 5개)
+        let gameStarted = false;      // 게임 시작 여부
+
+        // ========================================
+        // DOM 요소
+        // ========================================
+        const gameContainer = document.getElementById('gameContainer');
+        const mainText = document.getElementById('mainText');
+        const subText = document.getElementById('subText');
+        const gameDescription = document.getElementById('gameDescription');
+        const bestScoreEl = document.getElementById('bestScore');
+        const avgScoreEl = document.getElementById('avgScore');
+        const playCountEl = document.getElementById('playCount');
+
+        // ========================================
+        // 로컬 스토리지에서 최고 기록 불러오기
+        // ========================================
+        function loadBestScore() {
+            const saved = localStorage.getItem('reactionClickBestScore');
+            return saved ? parseInt(saved) : null;
+        }
+
+        function saveBestScore(score) {
+            localStorage.setItem('reactionClickBestScore', score);
+        }
+
+        let bestScore = loadBestScore();
+        if (bestScore) {
+            bestScoreEl.textContent = bestScore + 'ms';
+        }
+
+        // ========================================
+        // 게임 시작 함수
+        // ========================================
+        function startGame() {
+            gameStarted = true;
+            currentState = STATE.READY;
+            
+            // 게임 설명 숨기기
+            if (gameDescription) {
+                gameDescription.style.display = 'none';
+            }
+            
+            // UI 초기화
+            gameContainer.className = 'state-ready';
+            mainText.textContent = '준비하세요...';
+            // mainText.style.color는 CSS 클래스에서 관리
+            subText.textContent = '신호가 나타나면 클릭하세요';
+            // subText.style.color는 CSS 클래스에서 관리
+
+            // 1.5초 ~ 4초 사이의 랜덤 대기 시간 설정
+            const randomDelay = 1500 + Math.random() * 2500;
+
+            readyTimeout = setTimeout(() => {
+                showSignal();
+            }, randomDelay);
+        }
+
+        // ========================================
+        // 신호 표시 함수
+        // ========================================
+        function showSignal() {
+            currentState = STATE.SIGNAL;
+            signalTime = Date.now();
+            
+            // UI 변경
+            gameContainer.className = 'state-signal';
+            mainText.textContent = 'CLICK!';
+            // mainText.style.color는 CSS 클래스에서 관리
+            subText.textContent = '지금 클릭하세요!';
+            // subText.style.color는 CSS 클래스에서 관리
+        }
+
+        // ========================================
+        // 결과 처리 함수
+        // ========================================
+        function handleClick() {
+            const clickTime = Date.now();
+
+            if (currentState === STATE.READY) {
+                // 대기 중 클릭 → 실패 (너무 빨랐음)
+                clearTimeout(readyTimeout);
+                showResult('early', 0);
+                
+            } else if (currentState === STATE.SIGNAL) {
+                // 신호 후 클릭 → 반응속도 계산
+                const reactionTime = clickTime - signalTime;
+                
+                if (reactionTime < 50) {
+                    // 0ms ~ 50ms → 비정상 입력
+                    showResult('toofast', reactionTime);
+                } else if (reactionTime <= 500) {
+                    // 50ms ~ 500ms → 성공
+                    showResult('success', reactionTime);
+                    recordScore(reactionTime);
+                } else {
+                    // 500ms 초과 → 실패 (느림)
+                    showResult('slow', reactionTime);
+                }
+                
+            } else if (currentState === STATE.RESULT) {
+                // 결과 화면에서 클릭 → 재시작
+                startGame();
+            }
+        }
+
+        // ========================================
+        // 결과 화면 표시 함수
+        // ========================================
+        function showResult(type, reactionTime) {
+            currentState = STATE.RESULT;
+
+            if (type === 'early') {
+                // 너무 빨랐음
+                gameContainer.className = 'state-result-fail';
+                mainText.textContent = '너무 빨랐어요!';
+                // mainText.style.color는 CSS 클래스에서 관리
+                subText.textContent = '신호가 나타날 때까지 기다리세요';
+                // subText.style.color는 CSS 클래스에서 관리
+                
+            } else if (type === 'toofast') {
+                // 비정상 입력
+                gameContainer.className = 'state-result-fail';
+                mainText.textContent = '너무 빠름 (비정상)';
+                // mainText.style.color는 CSS 클래스에서 관리
+                subText.textContent = reactionTime + 'ms - 정상적인 반응이 아닙니다';
+                // subText.style.color는 CSS 클래스에서 관리
+                
+            } else if (type === 'success') {
+                // 성공
+                gameContainer.className = 'state-result-success';
+                mainText.textContent = '반응 속도: ' + reactionTime + 'ms';
+                // mainText.style.color는 CSS 클래스에서 관리
+                
+                // 랜덤 평가 문구
+                const comments = [
+                    '집중력 좋음!',
+                    '아직 인간!',
+                    '훌륭합니다!',
+                    '빠른 반응!',
+                    '잘했어요!'
+                ];
+                const randomComment = comments[Math.floor(Math.random() * comments.length)];
+                subText.textContent = randomComment + ' - 클릭하여 다시 시작';
+                // subText.style.color는 CSS 클래스에서 관리
+                
+            } else if (type === 'slow') {
+                // 느림
+                gameContainer.className = 'state-result-fail';
+                mainText.textContent = '늦었습니다';
+                // mainText.style.color는 CSS 클래스에서 관리
+                subText.textContent = reactionTime + 'ms - 500ms 이내에 클릭하세요';
+                // subText.style.color는 CSS 클래스에서 관리
+            }
+        }
+
+        // ========================================
+        // 점수 기록 및 통계 업데이트
+        // ========================================
+        function recordScore(score) {
+            // 최근 5회 기록에 추가
+            recentScores.push(score);
+            if (recentScores.length > 5) {
+                recentScores.shift(); // 가장 오래된 기록 제거
+            }
+
+            // 최고 기록 업데이트
+            if (bestScore === null || score < bestScore) {
+                bestScore = score;
+                saveBestScore(bestScore);
+                bestScoreEl.textContent = bestScore + 'ms';
+            }
+
+            // 평균 계산
+            const average = Math.round(
+                recentScores.reduce((a, b) => a + b, 0) / recentScores.length
+            );
+            avgScoreEl.textContent = average + 'ms';
+
+            // 게임 횟수 업데이트
+            const playCount = parseInt(playCountEl.textContent) + 1;
+            playCountEl.textContent = playCount;
+        }
+
+        // ========================================
+        // 이벤트 리스너
+        // ========================================
+        gameContainer.addEventListener('click', () => {
+            if (!gameStarted) {
+                // 첫 클릭 → 게임 시작
+                startGame();
+            } else {
+                // 게임 중 클릭 처리
+                handleClick();
+            }
+        });
+
+        // 터치 이벤트 지원 (모바일)
+        gameContainer.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // 기본 터치 동작 방지
+            if (!gameStarted) {
+                startGame();
+            } else {
+                handleClick();
+            }
+        });
+
+        // ========================================
+        // 초기화
+        // ========================================
+        console.log('🎮 1초 클릭 게임 로드 완료');
+        console.log('화면을 클릭하여 시작하세요!');
+    </script>
+</body>
+</html>

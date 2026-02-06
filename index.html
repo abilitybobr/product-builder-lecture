@@ -3,328 +3,402 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>간단 웹 게임 포털</title>
+    <title>Game Portal - Select Category</title>
     <style>
-        /* 기본 스타일 */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        /* --- 기본 설정 --- */
+        :root {
+            --background-color: #0d0c1d;
+            --card-color: #161a33;
+            --text-color: #e5e5e5;
+            --neon-blue: #00bfff;
+            --neon-pink: #ff00ff;
+            --neon-green: #39ff14;
+            --neon-yellow: #fdfd96;
+            
+            --glow-blue: rgba(0, 191, 255, 0.7);
+            --glow-pink: rgba(255, 0, 255, 0.7);
+            --glow-green: rgba(57, 255, 20, 0.7);
+            --glow-yellow: rgba(253, 253, 150, 0.7);
+        }
+
+        * {
             margin: 0;
-            padding: 20px;
-            background-color: #f4f7f6;
-            color: #333;
-            line-height: 1.6;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 30px auto;
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            padding: 25px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 30px;
-            font-size: 2.2em;
-        }
-
-        /* 게임 카테고리 스타일 */
-        .game-category {
-            background-color: #e0e6e9;
-            border: 1px solid #dcdfe1;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            overflow: hidden; /* Hide overflowing content when game-list is closed */
-        }
-
-        .category-title {
-            padding: 18px 25px;
-            font-size: 1.4em;
-            font-weight: bold;
-            color: #2c3e50;
-            cursor: pointer;
-            background-color: #dfe6ed;
-            transition: background-color 0.3s ease;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+                Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
         }
 
-        .category-title:hover {
-            background-color: #cfd8dc;
+        /* --- 헤더 --- */
+        .portal-header {
+            text-align: center;
+            margin-bottom: 3rem;
         }
 
-        .category-title.active {
-            background-color: #a7bed3;
+        .portal-header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
             color: #fff;
+            text-shadow: 
+                0 0 5px var(--glow-blue),
+                0 0 10px var(--glow-blue),
+                0 0 20px var(--glow-pink),
+                0 0 40px var(--glow-pink);
+            animation: flicker 3s infinite alternate;
         }
 
-        .arrow {
-            font-size: 1.2em;
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                text-shadow:
+                    0 0 5px var(--glow-blue),
+                    0 0 10px var(--glow-blue),
+                    0 0 20px var(--glow-pink),
+                    0 0 40px var(--glow-pink),
+                    0 0 70px var(--glow-pink);
+            }
+            20%, 24%, 55% {
+                text-shadow: none;
+            }
+        }
+
+        /* --- 아코디언 컨테이너 --- */
+        .category-accordion {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .game-category {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* --- 게임 카드 --- */
+        .category-card {
+            background: var(--card-color);
+            border: 2px solid var(--neon-blue);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-color);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 0 10px var(--glow-blue);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            line-height: 1;
             transition: transform 0.3s ease;
         }
 
-        .category-title.active .arrow {
-            transform: rotate(90deg);
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+            text-align: left;
         }
 
-        /* 게임 리스트 스타일 */
+        /* --- 카드 호버 효과 --- */
+        .category-card:hover {
+            transform: scale(1.02);
+            background: #1e244d;
+        }
+
+        .category-card:hover .card-icon {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .category-card:hover .card-title {
+            color: #fff;
+        }
+
+        /* 카드별 네온 색상 적용 */
+        .game-category:nth-child(1) .category-card { border-color: var(--neon-blue); box-shadow: 0 0 10px var(--glow-blue); }
+        .game-category:nth-child(1) .category-card:hover { box-shadow: 0 0 25px var(--glow-blue), inset 0 0 10px var(--glow-blue); }
+        .game-category:nth-child(1) .category-card:hover .card-title { text-shadow: 0 0 10px var(--glow-blue); }
+
+        .game-category:nth-child(2) .category-card { border-color: var(--neon-green); box-shadow: 0 0 10px var(--glow-green); }
+        .game-category:nth-child(2) .category-card:hover { box-shadow: 0 0 25px var(--glow-green), inset 0 0 10px var(--glow-green); }
+        .game-category:nth-child(2) .category-card:hover .card-title { text-shadow: 0 0 10px var(--glow-green); }
+
+        .game-category:nth-child(3) .category-card { border-color: var(--neon-yellow); box-shadow: 0 0 10px var(--glow-yellow); }
+        .game-category:nth-child(3) .category-card:hover { box-shadow: 0 0 25px var(--glow-yellow), inset 0 0 10px var(--glow-yellow); }
+        .game-category:nth-child(3) .category-card:hover .card-title { text-shadow: 0 0 10px var(--glow-yellow); }
+
+        .game-category:nth-child(4) .category-card { border-color: var(--neon-pink); box-shadow: 0 0 10px var(--glow-pink); }
+        .game-category:nth-child(4) .category-card:hover { box-shadow: 0 0 25px var(--glow-pink), inset 0 0 10px var(--glow-pink); }
+        .game-category:nth-child(4) .category-card:hover .card-title { text-shadow: 0 0 10px var(--glow-pink); }
+
+        /* 활성화된 카드 */
+        .category-card.active {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        /* --- 게임 리스트 --- */
         .game-list {
-            display: none; /* JavaScript will toggle this */
-            padding: 15px 25px 5px;
-            background-color: #f7f9fb;
-            border-top: 1px solid #dcdfe1;
+            max-height: 0;
+            overflow: hidden;
+            background: var(--card-color);
+            padding: 0 2rem;
+            border-radius: 0 0 15px 15px;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out;
         }
-
+        
         .game-list.active {
-            display: block;
+            padding: 2rem;
+            max-height: 500px; /* 충분한 높이 */
+            transition: max-height 0.5s ease-in, padding 0.5s ease-in;
         }
 
         .game-item {
-            background-color: #ffffff;
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 15px;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .game-item:last-child {
+            margin-bottom: 0;
         }
 
-        .game-item h3 {
-            margin: 0;
-            font-size: 1.2em;
-            color: #34495e;
+        .game-info h3 {
+            font-size: 1.2rem;
+            margin: 0 0 0.25rem 0;
+            color: #fff;
         }
 
-        .game-item p {
+        .game-info p {
+            font-size: 0.9rem;
+            color: #aaa;
             margin: 0;
-            font-size: 0.95em;
-            color: #5b6f84;
         }
 
         .start-button {
-            background-color: #3498db;
-            color: white;
+            background: var(--neon-blue);
+            color: var(--background-color);
             border: none;
-            padding: 10px 15px;
+            padding: 0.75rem 1.5rem;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.2s ease;
-            align-self: flex-start; /* Align button to start in flex column */
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 8px var(--glow-blue);
         }
 
         .start-button:hover {
-            background-color: #2980b9;
+            background: #fff;
+            box-shadow: 0 0 20px #fff;
         }
 
-        /* 반응형 디자인 */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            .container {
-                margin: 15px auto;
-                padding: 15px;
-            }
-            h1 {
-                font-size: 1.8em;
-                margin-bottom: 20px;
-            }
-            .category-title {
-                font-size: 1.2em;
-                padding: 15px 20px;
-            }
-            .game-list {
-                padding: 10px 20px 5px;
-            }
-            .game-item {
-                padding: 12px;
-                margin-bottom: 12px;
-            }
-            .game-item h3 {
-                font-size: 1.1em;
-            }
-            .game-item p {
-                font-size: 0.9em;
-            }
-            .start-button {
-                padding: 8px 12px;
-                font-size: 0.9em;
-            }
+        /* --- 반응형 디자인 --- */
+        @media (max-width: 960px) {
+            .portal-header h1 { font-size: 2.8rem; }
+            .card-title { font-size: 1.2rem; }
         }
 
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 1.5em;
-            }
-            .category-title {
-                font-size: 1.1em;
-                padding: 12px 15px;
-            }
-            .game-list {
-                padding: 8px 15px 5px;
-            }
-            .game-item {
-                padding: 10px;
-                margin-bottom: 10px;
-            }
-            .game-item h3 {
-                font-size: 1em;
-            }
-            .game-item p {
-                font-size: 0.85em;
-            }
-            .start-button {
-                padding: 7px 10px;
-                font-size: 0.85em;
-            }
+        @media (max-width: 600px) {
+            body { padding: 1rem; padding-top: 4rem; }
+            .portal-header h1 { font-size: 2.2rem; }
+            .category-card { flex-direction: column; gap: 1rem; padding: 1.5rem; }
+            .card-icon { font-size: 2.5rem; }
+            .card-title { font-size: 1.1rem; text-align: center; }
+            .game-item { flex-direction: column; align-items: flex-start; gap: 1rem; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>간단 웹 게임 포털</h1>
 
-        <!-- 게임 카테고리 1: 클릭 & 반응형 게임 -->
+    <header class="portal-header">
+        <h1>Select Category</h1>
+    </header>
+
+    <main class="category-accordion">
+        
         <div class="game-category">
-            <div class="category-title" data-category="reaction">
-                클릭 & 반응형 게임
-                <span class="arrow">></span>
+            <div class="category-card">
+                <div class="card-icon">⚡</div>
+                <h2 class="card-title">클릭 & 반응형 게임</h2>
             </div>
-            <div class="game-list" id="reaction-games">
+            <div class="game-list">
                 <div class="game-item">
-                    <h3>두더지 잡기</h3>
-                    <p>화면에 나타나는 두더지를 빠르게 클릭하세요!</p>
-                    <button class="start-button" data-game="두더지 잡기">게임 시작</button>
+                    <div class="game-info">
+                        <h3>1초 클릭</h3>
+                        <p>⚡ 반응속도 테스트 게임. 'CLICK!' 신호가 나타나면 최대한 빠르게 클릭하세요.</p>
+                    </div>
+                    <button class="start-button" data-game="1초 클릭" data-link="game/oneSecondGame.html">Play</button>
                 </div>
                 <div class="game-item">
-                    <h3>반응 속도 테스트</h3>
-                    <p>초록색으로 변하면 클릭! 당신의 반응 속도는?</p>
-                    <button class="start-button" data-game="반응 속도 테스트">게임 시작</button>
+                    <div class="game-info">
+                        <h3>반응 속도 테스트</h3>
+                        <p>초록색으로 변하면 클릭! 당신의 반응 속도는?</p>
+                    </div>
+                    <button class="start-button" data-game="반응 속도 테스트">Play</button>
                 </div>
                 <div class="game-item">
-                    <h3>숫자 맞추기</h3>
-                    <p>1부터 100 사이의 숫자를 맞춰보세요!</p>
-                    <button class="start-button" data-game="숫자 맞추기">게임 시작</button>
+                    <div class="game-info">
+                        <h3>숫자 맞추기</h3>
+                        <p>1부터 100 사이의 숫자를 맞춰보세요!</p>
+                    </div>
+                    <button class="start-button" data-game="숫자 맞추기">Play</button>
                 </div>
             </div>
         </div>
 
-        <!-- 게임 카테고리 2: 멍 때리기 / 힐링 게임 -->
         <div class="game-category">
-            <div class="category-title" data-category="healing">
-                멍 때리기 / 힐링 게임
-                <span class="arrow">></span>
+            <div class="category-card">
+                <div class="card-icon">🧘</div>
+                <h2 class="card-title">멍 때리기 / 힐링 게임</h2>
             </div>
-            <div class="game-list" id="healing-games">
-                <div class="game-item">
-                    <h3>1분 멍 때리기</h3>
-                    <p>아무것도 하지 않고 1분간 쉬어보세요.</p>
-                    <button class="start-button" data-game="1분 멍 때리기">게임 시작</button>
+            <div class="game-list">
+                 <div class="game-item">
+                    <div class="game-info">
+                        <h3>1분 멍 때리기</h3>
+                        <p>아무것도 하지 않고 1분간 쉬어보세요.</p>
+                    </div>
+                    <button class="start-button" data-game="1분 멍 때리기">Play</button>
                 </div>
-                <div class="game-item">
-                    <h3>파도 소리 듣기</h3>
-                    <p>잔잔한 파도 소리를 들으며 마음의 평화를 찾으세요.</p>
-                    <button class="start-button" data-game="파도 소리 듣기">게임 시작</button>
+                 <div class="game-item">
+                    <div class="game-info">
+                        <h3>파도 소리 듣기</h3>
+                        <p>잔잔한 파도 소리를 들으며 마음의 평화를 찾으세요.</p>
+                    </div>
+                    <button class="start-button" data-game="파도 소리 듣기">Play</button>
                 </div>
-                <div class="game-item">
-                    <h3>구름 세기</h3>
-                    <p>하늘에 떠 있는 구름을 세어보며 상상의 나래를 펼쳐보세요.</p>
-                    <button class="start-button" data-game="구름 세기">게임 시작</button>
+                 <div class="game-item">
+                    <div class="game-info">
+                        <h3>구름 세기</h3>
+                        <p>하늘에 떠 있는 구름을 세어보며 상상의 나래를 펼쳐보세요.</p>
+                    </div>
+                    <button class="start-button" data-game="구름 세기">Play</button>
                 </div>
             </div>
         </div>
 
-        <!-- 게임 카테고리 3: 판단력 테스트 -->
         <div class="game-category">
-            <div class="category-title" data-category="judgment">
-                판단력 테스트
-                <span class="arrow">></span>
+            <div class="category-card">
+                <div class="card-icon">🤔</div>
+                <h2 class="card-title">판단력 테스트</h2>
             </div>
-            <div class="game-list" id="judgment-games">
+            <div class="game-list">
                 <div class="game-item">
-                    <h3>사탕 고르기</h3>
-                    <p>빨간 사탕과 파란 사탕 중 어떤 것을 고를까요?</p>
-                    <button class="start-button" data-game="사탕 고르기">게임 시작</button>
+                    <div class="game-info">
+                        <h3>사탕 고르기</h3>
+                        <p>빨간 사탕과 파란 사탕 중 어떤 것을 고를까요?</p>
+                    </div>
+                    <button class="start-button" data-game="사탕 고르기">Play</button>
                 </div>
                 <div class="game-item">
-                    <h3>거짓말 탐지기</h3>
-                    <p>주어진 문장이 참인지 거짓인지 판단하세요.</p>
-                    <button class="start-button" data-game="거짓말 탐지기">게임 시작</button>
+                    <div class="game-info">
+                        <h3>거짓말 탐지기</h3>
+                        <p>주어진 문장이 참인지 거짓인지 판단하세요.</p>
+                    </div>
+                    <button class="start-button" data-game="거짓말 탐지기">Play</button>
                 </div>
                 <div class="game-item">
-                    <h3>미로 탈출</h3>
-                    <p>복잡한 미로의 출구를 찾아보세요.</p>
-                    <button class="start-button" data-game="미로 탈출">게임 시작</button>
+                    <div class="game-info">
+                        <h3>미로 탈출</h3>
+                        <p>복잡한 미로의 출구를 찾아보세요.</p>
+                    </div>
+                    <button class="start-button" data-game="미로 탈출">Play</button>
                 </div>
             </div>
         </div>
 
-        <!-- 게임 카테고리 4: 실수 유도형 게임 (웃긴 게임) -->
         <div class="game-category">
-            <div class="category-title" data-category="funny">
-                실수 유도형 게임 (웃긴 게임)
-                <span class="arrow">></span>
+            <div class="category-card">
+                <div class="card-icon">😂</div>
+                <h2 class="card-title">실수 유도형 게임</h2>
             </div>
-            <div class="game-list" id="funny-games">
+            <div class="game-list">
                 <div class="game-item">
-                    <h3>지뢰 찾기 (오답 유도)</h3>
-                    <p>일부러 틀린 답을 찾아보세요! 예상치 못한 결과가 당신을 기다려요.</p>
-                    <button class="start-button" data-game="지뢰 찾기 (오답 유도)">게임 시작</button>
+                    <div class="game-info">
+                        <h3>지뢰 찾기 (오답 유도)</h3>
+                        <p>일부러 틀린 답을 찾아보세요! 예상치 못한 결과가 당신을 기다려요.</p>
+                    </div>
+                    <button class="start-button" data-game="지뢰 찾기 (오답 유도)">Play</button>
                 </div>
                 <div class="game-item">
-                    <h3>발로 그리기</h3>
-                    <p>마우스 대신 발로 그림을 그려보세요. 예술의 경지에 도달할지도?</p>
-                    <button class="start-button" data-game="발로 그리기">게임 시작</button>
+                    <div class="game-info">
+                        <h3>발로 그리기</h3>
+                        <p>마우스 대신 발로 그림을 그려보세요. 예술의 경지에 도달할지도?</p>
+                    </div>
+                    <button class="start-button" data-game="발로 그리기">Play</button>
                 </div>
                 <div class="game-item">
-                    <h3>거꾸로 말하기</h3>
-                    <p>모든 단어를 거꾸로 말해보세요. 혀가 꼬일 준비 되셨나요?</p>
-                    <button class="start-button" data-game="거꾸로 말하기">게임 시작</button>
+                    <div class="game-info">
+                        <h3>거꾸로 말하기</h3>
+                        <p>모든 단어를 거꾸로 말해보세요. 혀가 꼬일 준비 되셨나요?</p>
+                    </div>
+                    <button class="start-button" data-game="거꾸로 말하기">Play</button>
                 </div>
             </div>
         </div>
-    </div>
+
+    </main>
 
     <script>
-        // 모든 카테고리 타이틀 요소 가져오기
-        const categoryTitles = document.querySelectorAll('.category-title');
-        // 모든 게임 시작 버튼 요소 가져오기
-        const startButtons = document.querySelectorAll('.start-button');
+        const categoryCards = document.querySelectorAll('.category-card');
 
-        // 카테고리 타이틀 클릭 이벤트 리스너 추가
-        categoryTitles.forEach(title => {
-            title.addEventListener('click', () => {
-                const gameList = title.nextElementSibling; // 다음 형제 요소인 game-list 가져오기
-
-                // 현재 클릭된 카테고리의 game-list가 이미 열려있는지 확인
+        categoryCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const gameList = card.nextElementSibling;
                 const isActive = gameList.classList.contains('active');
 
-                // 모든 game-list 닫기 및 active 클래스 제거
-                document.querySelectorAll('.game-list').forEach(list => {
-                    list.classList.remove('active');
-                    list.previousElementSibling.classList.remove('active'); // 타이틀에서도 active 클래스 제거
+                // 모든 활성 클래스 제거
+                document.querySelectorAll('.game-list.active').forEach(activeList => {
+                    activeList.classList.remove('active');
+                    activeList.previousElementSibling.classList.remove('active');
                 });
 
-                // 현재 클릭된 카테고리의 game-list가 닫혀 있었다면 열기
+                // 현재 클릭된 것이 비활성 상태였다면 활성화
                 if (!isActive) {
                     gameList.classList.add('active');
-                    title.classList.add('active'); // 타이틀에 active 클래스 추가
+                    card.classList.add('active');
                 }
             });
         });
 
-        // 게임 시작 버튼 클릭 이벤트 리스너 추가
+        const startButtons = document.querySelectorAll('.start-button');
+        
         startButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const gameName = button.dataset.game; // data-game 속성 값 가져오기
-                alert(`"${gameName}" 게임 시작! (실제 게임은 없으며 콘솔에 기록됩니다)`);
-                console.log(`"${gameName}" 게임이 시작되었습니다.`);
+            button.addEventListener('click', (event) => {
+                event.stopPropagation(); // 카테고리 카드 클릭 이벤트 전파 방지
+                
+                const gameName = button.dataset.game;
+                const gameLink = button.dataset.link;
+
+                if (gameLink) {
+                    window.location.href = gameLink;
+                } else {
+                    alert(`'${gameName}' 게임을 시작합니다! (플레이 기능은 준비 중입니다)`);
+                    console.log(`'${gameName}' game started.`);
+                }
             });
         });
     </script>
