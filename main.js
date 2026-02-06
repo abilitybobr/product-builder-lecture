@@ -1,1 +1,1 @@
-// Add JS here
+import './lotto-generator.js';

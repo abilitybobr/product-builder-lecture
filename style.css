@@ -1,1 +1,43 @@
-/* Add styles here */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  background: linear-gradient(135deg, #ffc3a0, #ffafbd);
+  background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+  background: linear-gradient(135deg, #f6d365, #fda085);
+  background: linear-gradient(to right, #ffecd2 0%, #fcb69f 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"><g fill-opacity="0.2"><rect fill="hsl(45, 50%, 80%)" width="800" height="800"/><circle fill="hsl(65, 50%, 80%)" cx="400" cy="400" r="300"/><circle fill="hsl(85, 50%, 80%)" cx="400" cy="400" r="200"/><circle fill="hsl(105, 50%, 80%)" cx="400" cy="400" r="100"/></g></svg>');
+    background-size: cover;
+    opacity: 0.2;
+    z-index: -1;
+}
+
+lotto-generator {
+  display: block;
+  background-color: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 15px 15px rgba(0, 0, 0, 0.05);
+  padding: 30px 40px;
+  transition: all 0.3s ease-in-out;
+  width: 90%;
+  max-width: 500px;
+}
+
+lotto-generator:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 20px 20px rgba(0, 0, 0, 0.1);
+}
