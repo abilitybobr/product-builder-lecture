@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 빨간 버튼 누르지 마</title>
+    <style>
+        /* --- 기본 설정 (index.html, oneSecondGame.html과 통일) --- */
+        :root {
+            --background-color: #0d0c1d;
+            --card-color: #161a33;
+            --text-color: #e5e5e5;
+            --neon-blue: #00bfff;
+            --neon-pink: #ff00ff;
+            --neon-green: #39ff14;
+            --neon-yellow: #fdfd96;
+            
+            --glow-blue: rgba(0, 191, 255, 0.7);
+            --glow-pink: rgba(255, 0, 255, 0.7);
+            --glow-green: rgba(57, 255, 20, 0.7);
+            --glow-yellow: rgba(253, 253, 150, 0.7);
+
+            /* Game specific colors */
+            --red-button-color: #ff3366; /* Vibrant red for the forbidden button */
+            --red-button-glow: rgba(255, 51, 102, 0.8);
+            --game-over-text: #ff007f; /* Strong pink for game over */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+                Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            user-select: none;
+            position: relative; /* For back button positioning */
+        }
+
+        /* --- Back to Main Button --- */
+        .back-to-main-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--neon-blue);
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 8px var(--glow-blue);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-to-main-button:hover {
+            background: var(--neon-blue);
+            color: var(--background-color);
+            box-shadow: 0 0 15px var(--glow-blue);
+            transform: translateY(-2px);
+        }
+
+        .back-to-main-button .arrow-icon {
+            font-size: 1.2em;
+        }
+
+        /* --- Game Container --- */
+        #gameContainer {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- Score Board --- */
+        #scoreBoard {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-color);
+            padding: 15px 40px;
+            border-radius: 20px;
+            box-shadow: 0 0 15px var(--glow-green);
+            border: 2px solid var(--neon-green);
+            z-index: 100;
+        }
+
+        #currentScore {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: var(--neon-green);
+            text-align: center;
+            text-shadow: 0 0 8px var(--glow-green);
+        }
+
+        #bestScore {
+            font-size: 1em;
+            color: var(--text-color);
+            margin-top: 5px;
+            text-align: center;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+
+        /* --- Message --- */
+        #message {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: var(--neon-pink);
+            text-shadow: 
+                0 0 5px var(--glow-pink),
+                0 0 10px var(--glow-pink),
+                0 0 20px var(--glow-pink);
+            text-align: center;
+            padding: 20px;
+            animation: pulse 2s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        /* --- Button Container --- */
+        #buttonContainer {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* --- Game Button Style --- */
+        .gameButton {
+            position: absolute;
+            padding: 18px 35px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 10px rgba(0, 191, 255, 0.5); /* Default blue glow */
+            animation: fadeIn 0.3s ease;
+            color: var(--background-color); /* Text color for safe buttons */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .gameButton:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 20px var(--glow-blue);
+        }
+
+        .gameButton:active {
+            transform: scale(0.95);
+        }
+
+        /* Red Button specific styles */
+        .gameButton[data-is-red="true"] {
+            background: var(--red-button-color); /* Use CSS variable */
+            color: white;
+            box-shadow: 0 0 15px var(--red-button-glow);
+            text-shadow: 0 0 5px rgba(255,255,255,0.7);
+        }
+
+        .gameButton[data-is-red="true"]:hover {
+            box-shadow: 0 0 25px var(--red-button-glow);
+            transform: scale(1.08) rotate(2deg);
+        }
+
+        /* --- Game Over Screen --- */
+        #gameOverScreen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 200;
+            animation: fadeInScreen 0.5s ease;
+        }
+
+        @keyframes fadeInScreen {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #gameOverMessage {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: var(--game-over-text);
+            margin-bottom: 30px;
+            text-shadow: 
+                0 0 10px var(--game-over-text),
+                0 0 20px var(--game-over-text);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-15px) rotate(-3deg); }
+            75% { transform: translateX(15px) rotate(3deg); }
+        }
+
+        #finalScore {
+            font-size: 2.5em;
+            color: var(--neon-yellow);
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px var(--glow-yellow);
+        }
+
+        #restartButton {
+            padding: 15px 50px;
+            font-size: 1.5em;
+            font-weight: bold;
+            background: var(--neon-blue);
+            color: var(--background-color);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 15px var(--glow-blue);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        #restartButton:hover {
+            transform: scale(1.1);
+            background: #fff;
+            box-shadow: 0 0 25px #fff;
+        }
+
+        /* --- FadeOut animation (moved from JS) --- */
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+        }
+
+        /* --- 반응형 디자인 --- */
+        @media (max-width: 768px) {
+            #message {
+                font-size: 1.8em;
+            }
+
+            #scoreBoard {
+                padding: 10px 20px;
+            }
+            #currentScore {
+                font-size: 1.8em;
+            }
+            #bestScore {
+                font-size: 0.9em;
+            }
+
+            .gameButton {
+                padding: 12px 25px;
+                font-size: 1em;
+                border-radius: 10px;
+            }
+
+            #gameOverMessage {
+                font-size: 2.5em;
+            }
+
+            #finalScore {
+                font-size: 1.8em;
+            }
+            #restartButton {
+                padding: 10px 30px;
+                font-size: 1.2em;
+            }
+            .back-to-main-button {
+                top: 10px;
+                left: 10px;
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #message {
+                font-size: 1.5em;
+            }
+            #gameOverMessage {
+                font-size: 2em;
+            }
+            #finalScore {
+                font-size: 1.5em;
+            }
+            .gameButton {
+                padding: 10px 20px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 메인 페이지로 돌아가는 버튼 -->
+    <a href="../../index.html" class="back-to-main-button">
+        <span class="arrow-icon">&lt;</span> 메인으로
+    </a>
+
+    <div id="gameContainer">
+        <!-- 점수판 -->
+        <div id="scoreBoard">
+            <div id="currentScore">점수: 0</div>
+            <div id="bestScore">최고 점수: 0</div>
+        </div>
+
+        <!-- 안내 메시지 -->
+        <div id="message">빨간 버튼만 누르지 마세요!</div>
+
+        <!-- 버튼 컨테이너 -->
+        <div id="buttonContainer"></div>
+
+        <!-- 게임 오버 화면 -->
+        <div id="gameOverScreen">
+            <div id="gameOverMessage">왜 눌렀어요? 😤</div>
+            <div id="finalScore">최종 점수: 0</div>
+            <button id="restartButton">다시 도전</button>
+        </div>
+    </div>
+
+    <script>
+        // ========== 게임 상태 관리 ==========
+        const GameState = {
+            READY: 'ready',
+            PLAYING: 'playing',
+            GAME_OVER: 'gameover'
+        };
+
+        let currentState = GameState.READY;
+        let score = 0;
+        let bestScore = localStorage.getItem('redButtonBestScore') || 0; // 로컬 스토리지 키 변경
+
+        // ========== DOM 요소 ==========
+        const message = document.getElementById('message');
+        const buttonContainer = document.getElementById('buttonContainer');
+        const scoreBoard = document.getElementById('scoreBoard');
+        const currentScoreEl = document.getElementById('currentScore');
+        const bestScoreEl = document.getElementById('bestScore');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const gameOverMessage = document.getElementById('gameOverMessage');
+        const finalScoreEl = document.getElementById('finalScore');
+        const restartButton = document.getElementById('restartButton');
+
+        // ========== 버튼 텍스트 옵션 ==========
+        const safeButtonTexts = [
+            '안전', '여기!', '클릭', '정답', '이건 아님', 
+            '여기로', '눌러봐', 'OK', '통과', '괜찮아',
+            '이거다', '맞아', '여기야', '클릭해', '선택'
+        ];
+
+        const redButtonTexts = [
+            '금지', '위험', '절대 금지', 'NO', '🚫',
+            '누르지마', '빨강', 'STOP', '❌', '주의'
+        ];
+
+        const gameOverMessages = [
+            '왜 눌렀어요? 😤',
+            '역시 인간... 🙄',
+            '참을 수 없었군요 😏',
+            '호기심이 과했어요 🤦',
+            '말렸잖아요! 😠',
+            '그럴 줄 알았어 😌'
+        ];
+
+        // ========== 게임 초기화 ==========
+        function initGame() {
+            score = 0;
+            currentState = GameState.READY;
+            updateScore();
+            message.style.display = 'block';
+            message.textContent = '빨간 버튼만 누르지 마세요!';
+            gameOverScreen.style.display = 'none';
+            buttonContainer.innerHTML = '';
+
+            // 1초 후 게임 시작
+            setTimeout(startGame, 1500);
+        }
+
+        // ========== 게임 시작 ==========
+        function startGame() {
+            currentState = GameState.PLAYING;
+            message.style.display = 'none';
+            createButtons();
+        }
+
+        // ========== 버튼 생성 로직 ==========
+        function createButtons() {
+            // 기존 버튼 제거
+            buttonContainer.innerHTML = '';
+
+            // 난이도에 따른 버튼 개수 결정 (3~6개)
+            const minButtons = 3;
+            const maxButtons = Math.min(6, 3 + Math.floor(score / 5));
+            const buttonCount = Math.floor(Math.random() * (maxButtons - minButtons + 1)) + minButtons;
+
+            // 빨간 버튼 위치 랜덤 결정
+            const redButtonIndex = Math.floor(Math.random() * buttonCount);
+
+            // 버튼 생성
+            const rootStyle = getComputedStyle(document.documentElement);
+            const safeButtonColors = [
+                rootStyle.getPropertyValue('--neon-blue'),
+                rootStyle.getPropertyValue('--neon-green'),
+                rootStyle.getPropertyValue('--neon-yellow'),
+                rootStyle.getPropertyValue('--neon-pink')
+            ];
+
+            for (let i = 0; i < buttonCount; i++) {
+                const button = document.createElement('button');
+                button.className = 'gameButton';
+                button.dataset.isRed = (i === redButtonIndex).toString(); // data-is-red 속성 사용
+
+                if (button.dataset.isRed === 'true') {
+                    // 빨간 버튼은 CSS 클래스로 스타일링. JS에서는 텍스트만 설정.
+                    button.textContent = redButtonTexts[Math.floor(Math.random() * redButtonTexts.length)];
+                } else {
+                    // 안전한 버튼 설정
+                    button.style.background = safeButtonColors[Math.floor(Math.random() * safeButtonColors.length)];
+                    button.textContent = safeButtonTexts[Math.floor(Math.random() * safeButtonTexts.length)];
+                }
+
+                // 랜덤 위치 설정 (화면 가장자리 여백 고려)
+                const margin = 100;
+                const maxX = window.innerWidth - margin - 150;
+                const maxY = window.innerHeight - margin - 150;
+                
+                button.style.left = `${Math.random() * maxX + margin/2}px`;
+                button.style.top = `${Math.random() * maxY + margin}px`;
+
+                // 클릭 이벤트
+                button.addEventListener('click', handleButtonClick);
+
+                buttonContainer.appendChild(button);
+            }
+        }
+
+        // ========== 버튼 클릭 처리 ==========
+        function handleButtonClick(event) {
+            if (currentState !== GameState.PLAYING) return;
+
+            const button = event.target;
+            const isRed = button.dataset.isRed === 'true';
+
+            if (isRed) {
+                // 빨간 버튼 클릭 - 게임 오버
+                gameOver();
+            } else {
+                // 안전한 버튼 클릭 - 점수 증가
+                score++;
+                updateScore();
+                
+                // 버튼 제거 애니메이션
+                button.style.animation = 'fadeOut 0.2s ease forwards'; // 'forwards' 추가
+                setTimeout(() => {
+                    createButtons();
+                }, 200);
+            }
+        }
+
+        // ========== 점수 업데이트 ==========
+        function updateScore() {
+            currentScoreEl.textContent = `점수: ${score}`;
+            bestScoreEl.textContent = `최고 점수: ${bestScore}`;
+        }
+
+        // ========== 게임 오버 ==========
+        function gameOver() {
+            currentState = GameState.GAME_OVER;
+            buttonContainer.innerHTML = '';
+
+            // 최고 점수 갱신
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('redButtonBestScore', bestScore); // 로컬 스토리지 키 변경
+            }
+
+            // 게임 오버 메시지 랜덤 선택
+            gameOverMessage.textContent = gameOverMessages[Math.floor(Math.random() * gameOverMessages.length)];
+            finalScoreEl.textContent = `최종 점수: ${score}`;
+
+            // 게임 오버 화면 표시
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // ========== 재시작 버튼 ==========
+        restartButton.addEventListener('click', initGame);
+
+        // ========== 게임 시작 ==========
+        bestScoreEl.textContent = `최고 점수: ${bestScore}`;
+        initGame();
+    </script>
+</body>
+</html>
