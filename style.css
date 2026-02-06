@@ -1,3 +1,25 @@
+:root {
+    --background-color: linear-gradient(to right, #ffecd2 0%, #fcb69f 100%);
+    --text-color: #333;
+    --lotto-generator-bg: white;
+    --lotto-generator-shadow-1: rgba(0, 0, 0, 0.1);
+    --lotto-generator-shadow-2: rgba(0, 0, 0, 0.05);
+    --lotto-generator-hover-shadow-1: rgba(0, 0, 0, 0.15);
+    --lotto-generator-hover-shadow-2: rgba(0, 0, 0, 0.1);
+    --lotto-h2-color: #333;
+}
+
+[data-theme="dark"] {
+    --background-color: linear-gradient(135deg, #2c3e50, #34495e);
+    --text-color: #f5f5f5;
+    --lotto-generator-bg: #3b4b5e;
+    --lotto-generator-shadow-1: rgba(0, 0, 0, 0.3);
+    --lotto-generator-shadow-2: rgba(0, 0, 0, 0.2);
+    --lotto-generator-hover-shadow-1: rgba(0, 0, 0, 0.4);
+    --lotto-generator-hover-shadow-2: rgba(0, 0, 0, 0.3);
+    --lotto-h2-color: #e0e0e0;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   display: flex;
@@ -5,12 +27,10 @@ body {
   align-items: center;
   min-height: 100vh;
   margin: 0;
-  background: linear-gradient(135deg, #ffc3a0, #ffafbd);
-  background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
-  background: linear-gradient(135deg, #f6d365, #fda085);
-  background: linear-gradient(to right, #ffecd2 0%, #fcb69f 100%);
+  background: var(--background-color);
   position: relative;
   overflow: hidden;
+  color: var(--text-color);
 }
 
 body::before {
@@ -26,11 +46,15 @@ body::before {
     z-index: -1;
 }
 
+[data-theme="dark"] body::before {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"><g fill-opacity="0.1"><rect fill="hsl(210, 20%, 30%)" width="800" height="800"/><circle fill="hsl(230, 20%, 30%)" cx="400" cy="400" r="300"/><circle fill="hsl(250, 20%, 30%)" cx="400" cy="400" r="200"/><circle fill="hsl(270, 20%, 30%)" cx="400" cy="400" r="100"/></g></svg>');
+}
+
 lotto-generator {
   display: block;
-  background-color: white;
+  background-color: var(--lotto-generator-bg);
   border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 15px 15px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 20px 40px var(--lotto-generator-shadow-1), 0 15px 15px var(--lotto-generator-shadow-2);
   padding: 30px 40px;
   transition: all 0.3s ease-in-out;
   width: 90%;
@@ -39,5 +63,35 @@ lotto-generator {
 
 lotto-generator:hover {
     transform: translateY(-5px);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 20px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 25px 50px var(--lotto-generator-hover-shadow-1), 0 20px 20px var(--lotto-generator-hover-shadow-2);
+}
+
+/* Theme Toggle Button Styles */
+.theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: var(--lotto-generator-bg);
+    color: var(--text-color);
+    border: none;
+    padding: 10px 15px;
+    border-radius: 50px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+h2 {
+    color: var(--lotto-h2-color);
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    font-weight: 700;
+    letter-spacing: -1px;
 }
