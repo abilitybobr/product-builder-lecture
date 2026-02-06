@@ -1,16 +1,332 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="light">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>로또 번호 생성기</title>
-    <link rel="stylesheet" href="style.css">
+    <title>간단 웹 게임 포털</title>
+    <style>
+        /* 기본 스타일 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+
+        /* 게임 카테고리 스타일 */
+        .game-category {
+            background-color: #e0e6e9;
+            border: 1px solid #dcdfe1;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden; /* Hide overflowing content when game-list is closed */
+        }
+
+        .category-title {
+            padding: 18px 25px;
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+            cursor: pointer;
+            background-color: #dfe6ed;
+            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-title:hover {
+            background-color: #cfd8dc;
+        }
+
+        .category-title.active {
+            background-color: #a7bed3;
+            color: #fff;
+        }
+
+        .arrow {
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+
+        .category-title.active .arrow {
+            transform: rotate(90deg);
+        }
+
+        /* 게임 리스트 스타일 */
+        .game-list {
+            display: none; /* JavaScript will toggle this */
+            padding: 15px 25px 5px;
+            background-color: #f7f9fb;
+            border-top: 1px solid #dcdfe1;
+        }
+
+        .game-list.active {
+            display: block;
+        }
+
+        .game-item {
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .game-item h3 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #34495e;
+        }
+
+        .game-item p {
+            margin: 0;
+            font-size: 0.95em;
+            color: #5b6f84;
+        }
+
+        .start-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s ease;
+            align-self: flex-start; /* Align button to start in flex column */
+        }
+
+        .start-button:hover {
+            background-color: #2980b9;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                margin: 15px auto;
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+            .category-title {
+                font-size: 1.2em;
+                padding: 15px 20px;
+            }
+            .game-list {
+                padding: 10px 20px 5px;
+            }
+            .game-item {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+            .game-item h3 {
+                font-size: 1.1em;
+            }
+            .game-item p {
+                font-size: 0.9em;
+            }
+            .start-button {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            .category-title {
+                font-size: 1.1em;
+                padding: 12px 15px;
+            }
+            .game-list {
+                padding: 8px 15px 5px;
+            }
+            .game-item {
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            .game-item h3 {
+                font-size: 1em;
+            }
+            .game-item p {
+                font-size: 0.85em;
+            }
+            .start-button {
+                padding: 7px 10px;
+                font-size: 0.85em;
+            }
+        }
+    </style>
 </head>
 <body>
-    <button id="theme-toggle" class="theme-toggle">🌗</button>
     <div class="container">
-        <lotto-generator></lotto-generator>
+        <h1>간단 웹 게임 포털</h1>
+
+        <!-- 게임 카테고리 1: 클릭 & 반응형 게임 -->
+        <div class="game-category">
+            <div class="category-title" data-category="reaction">
+                클릭 & 반응형 게임
+                <span class="arrow">></span>
+            </div>
+            <div class="game-list" id="reaction-games">
+                <div class="game-item">
+                    <h3>두더지 잡기</h3>
+                    <p>화면에 나타나는 두더지를 빠르게 클릭하세요!</p>
+                    <button class="start-button" data-game="두더지 잡기">게임 시작</button>
+                </div>
+                <div class="game-item">
+                    <h3>반응 속도 테스트</h3>
+                    <p>초록색으로 변하면 클릭! 당신의 반응 속도는?</p>
+                    <button class="start-button" data-game="반응 속도 테스트">게임 시작</button>
+                </div>
+                <div class="game-item">
+                    <h3>숫자 맞추기</h3>
+                    <p>1부터 100 사이의 숫자를 맞춰보세요!</p>
+                    <button class="start-button" data-game="숫자 맞추기">게임 시작</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 게임 카테고리 2: 멍 때리기 / 힐링 게임 -->
+        <div class="game-category">
+            <div class="category-title" data-category="healing">
+                멍 때리기 / 힐링 게임
+                <span class="arrow">></span>
+            </div>
+            <div class="game-list" id="healing-games">
+                <div class="game-item">
+                    <h3>1분 멍 때리기</h3>
+                    <p>아무것도 하지 않고 1분간 쉬어보세요.</p>
+                    <button class="start-button" data-game="1분 멍 때리기">게임 시작</button>
+                </div>
+                <div class="game-item">
+                    <h3>파도 소리 듣기</h3>
+                    <p>잔잔한 파도 소리를 들으며 마음의 평화를 찾으세요.</p>
+                    <button class="start-button" data-game="파도 소리 듣기">게임 시작</button>
+                </div>
+                <div class="game-item">
+                    <h3>구름 세기</h3>
+                    <p>하늘에 떠 있는 구름을 세어보며 상상의 나래를 펼쳐보세요.</p>
+                    <button class="start-button" data-game="구름 세기">게임 시작</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 게임 카테고리 3: 판단력 테스트 -->
+        <div class="game-category">
+            <div class="category-title" data-category="judgment">
+                판단력 테스트
+                <span class="arrow">></span>
+            </div>
+            <div class="game-list" id="judgment-games">
+                <div class="game-item">
+                    <h3>사탕 고르기</h3>
+                    <p>빨간 사탕과 파란 사탕 중 어떤 것을 고를까요?</p>
+                    <button class="start-button" data-game="사탕 고르기">게임 시작</button>
+                </div>
+                <div class="game-item">
+                    <h3>거짓말 탐지기</h3>
+                    <p>주어진 문장이 참인지 거짓인지 판단하세요.</p>
+                    <button class="start-button" data-game="거짓말 탐지기">게임 시작</button>
+                </div>
+                <div class="game-item">
+                    <h3>미로 탈출</h3>
+                    <p>복잡한 미로의 출구를 찾아보세요.</p>
+                    <button class="start-button" data-game="미로 탈출">게임 시작</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 게임 카테고리 4: 실수 유도형 게임 (웃긴 게임) -->
+        <div class="game-category">
+            <div class="category-title" data-category="funny">
+                실수 유도형 게임 (웃긴 게임)
+                <span class="arrow">></span>
+            </div>
+            <div class="game-list" id="funny-games">
+                <div class="game-item">
+                    <h3>지뢰 찾기 (오답 유도)</h3>
+                    <p>일부러 틀린 답을 찾아보세요! 예상치 못한 결과가 당신을 기다려요.</p>
+                    <button class="start-button" data-game="지뢰 찾기 (오답 유도)">게임 시작</button>
+                </div>
+                <div class="game-item">
+                    <h3>발로 그리기</h3>
+                    <p>마우스 대신 발로 그림을 그려보세요. 예술의 경지에 도달할지도?</p>
+                    <button class="start-button" data-game="발로 그리기">게임 시작</button>
+                </div>
+                <div class="game-item">
+                    <h3>거꾸로 말하기</h3>
+                    <p>모든 단어를 거꾸로 말해보세요. 혀가 꼬일 준비 되셨나요?</p>
+                    <button class="start-button" data-game="거꾸로 말하기">게임 시작</button>
+                </div>
+            </div>
+        </div>
     </div>
-    <script src="main.js" type="module"></script>
+
+    <script>
+        // 모든 카테고리 타이틀 요소 가져오기
+        const categoryTitles = document.querySelectorAll('.category-title');
+        // 모든 게임 시작 버튼 요소 가져오기
+        const startButtons = document.querySelectorAll('.start-button');
+
+        // 카테고리 타이틀 클릭 이벤트 리스너 추가
+        categoryTitles.forEach(title => {
+            title.addEventListener('click', () => {
+                const gameList = title.nextElementSibling; // 다음 형제 요소인 game-list 가져오기
+
+                // 현재 클릭된 카테고리의 game-list가 이미 열려있는지 확인
+                const isActive = gameList.classList.contains('active');
+
+                // 모든 game-list 닫기 및 active 클래스 제거
+                document.querySelectorAll('.game-list').forEach(list => {
+                    list.classList.remove('active');
+                    list.previousElementSibling.classList.remove('active'); // 타이틀에서도 active 클래스 제거
+                });
+
+                // 현재 클릭된 카테고리의 game-list가 닫혀 있었다면 열기
+                if (!isActive) {
+                    gameList.classList.add('active');
+                    title.classList.add('active'); // 타이틀에 active 클래스 추가
+                }
+            });
+        });
+
+        // 게임 시작 버튼 클릭 이벤트 리스너 추가
+        startButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const gameName = button.dataset.game; // data-game 속성 값 가져오기
+                alert(`"${gameName}" 게임 시작! (실제 게임은 없으며 콘솔에 기록됩니다)`);
+                console.log(`"${gameName}" 게임이 시작되었습니다.`);
+            });
+        });
+    </script>
 </body>
 </html>
