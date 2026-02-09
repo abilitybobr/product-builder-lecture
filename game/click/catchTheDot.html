@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 점 잡기 (Catch the Dot)</title>
+    <style>
+        /* --- 기본 설정 (index.html, oneSecondGame.html과 통일) --- */
+        :root {
+            --background-color: #0d0c1d;
+            --card-color: #161a33;
+            --text-color: #e5e5e5;
+            --neon-blue: #00bfff;
+            --neon-pink: #ff00ff;
+            --neon-green: #39ff14;
+            --neon-yellow: #fdfd96;
+            
+            --glow-blue: rgba(0, 191, 255, 0.7);
+            --glow-pink: rgba(255, 0, 255, 0.7);
+            --glow-green: rgba(57, 255, 20, 0.7);
+            --glow-yellow: rgba(253, 253, 150, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+                Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            user-select: none;
+            position: relative; /* For back button positioning */
+        }
+
+        /* --- Back to Main Button --- */
+        .back-to-main-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--neon-blue);
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 8px var(--glow-blue);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-to-main-button:hover {
+            background: var(--neon-blue);
+            color: var(--background-color);
+            box-shadow: 0 0 15px var(--glow-blue);
+            transform: translateY(-2px);
+        }
+
+        .back-to-main-button .arrow-icon {
+            font-size: 1.2em;
+        }
+
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: var(--card-color); /* Updated to use card color */
+            overflow: hidden;
+            cursor: crosshair;
+            border: 2px solid var(--neon-pink); /* Added border */
+            border-radius: 15px; /* Rounded corners */
+            box-shadow: 0 0 15px var(--glow-pink); /* Added shadow */
+            display: flex; /* Ensure flex for centering screens */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        /* 게임 상태 화면 */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            background: rgba(0,0,0,0.8); /* Darker overlay */
+            transition: opacity 0.3s;
+            border-radius: 15px; /* Match container */
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 타이틀 */
+        h1 {
+            font-size: 3em;
+            color: var(--neon-blue); /* Used neon blue */
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--glow-blue); /* Added neon glow */
+        }
+
+        /* 설명 텍스트 */
+        .instruction {
+            font-size: 1.3em;
+            color: var(--text-color); /* Used text color */
+            margin-bottom: 30px;
+            text-align: center;
+            padding: 0 20px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); /* Soft glow */
+        }
+
+        /* 시작 버튼 */
+        .startBtn {
+            padding: 15px 40px;
+            font-size: 1.5em;
+            background: var(--neon-green); /* Used neon green */
+            color: var(--background-color); /* Used background color for text */
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 15px var(--glow-green); /* Added neon glow */
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .startBtn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 0 25px var(--glow-green), inset 0 0 10px var(--glow-green);
+        }
+
+        .startBtn:active {
+            transform: translateY(0) scale(1);
+        }
+
+        /* HUD (점수 및 타이머) */
+        #hud {
+            position: absolute;
+            top: 20px;
+            width: calc(100% - 40px); /* Adjust width */
+            padding: 0;
+            display: flex;
+            justify-content: space-between;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #hud.show {
+            opacity: 1;
+        }
+
+        .hudItem {
+            background: var(--card-color); /* Used card color */
+            padding: 10px 20px;
+            border-radius: 10px; /* Slightly less rounded */
+            font-size: 1.5em;
+            font-weight: bold;
+            box-shadow: 0 0 10px var(--glow-blue); /* Neon blue glow */
+            border: 1px solid var(--neon-blue); /* Neon blue border */
+            color: var(--neon-blue); /* Neon blue text */
+        }
+
+        #score {
+            color: var(--neon-green); /* Neon green for score */
+        }
+
+        #timer {
+            color: var(--neon-pink); /* Neon pink for timer */
+        }
+
+        /* 움직이는 점 */
+        #dot {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--neon-yellow); /* Used neon yellow */
+            box-shadow: 0 0 15px var(--glow-yellow); /* Neon yellow glow */
+            cursor: pointer;
+            transition: transform 0.1s;
+            z-index: 3;
+            opacity: 0;
+        }
+
+        #dot.show {
+            opacity: 1;
+        }
+
+        #dot:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px var(--glow-yellow); /* Enhanced glow on hover */
+        }
+
+        #dot.clicked {
+            animation: dotClick 0.3s ease-out;
+        }
+
+        @keyframes dotClick {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* 클릭 효과 */
+        .clickEffect {
+            position: absolute;
+            pointer-events: none;
+            z-index: 2;
+            animation: clickRipple 0.6s ease-out forwards;
+        }
+
+        @keyframes clickRipple {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 100px;
+                height: 100px;
+                opacity: 0;
+            }
+        }
+
+        /* 결과 화면 */
+        .resultText {
+            font-size: 2em;
+            color: var(--text-color); /* Used text color */
+            margin-bottom: 20px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+
+        .finalScore {
+            font-size: 4em;
+            color: var(--neon-green); /* Used neon green */
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px var(--glow-green); /* Neon green glow */
+        }
+
+        .evaluation {
+            font-size: 1.5em;
+            color: var(--neon-blue); /* Used neon blue */
+            margin-bottom: 30px;
+            font-style: italic;
+            text-shadow: 0 0 8px var(--glow-blue);
+        }
+
+        .bestScore {
+            font-size: 1.2em;
+            color: var(--text-color); /* Used text color */
+            margin-bottom: 30px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+
+        /* 모바일 대응 */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .instruction {
+                font-size: 1.1em;
+            }
+
+            .startBtn {
+                font-size: 1.2em;
+                padding: 12px 30px;
+            }
+
+            .hudItem {
+                font-size: 1.2em;
+                padding: 8px 15px;
+            }
+
+            .finalScore {
+                font-size: 3em;
+            }
+
+            .resultText {
+                font-size: 1.5em;
+            }
+
+            .evaluation {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 메인 페이지로 돌아가는 버튼 -->
+    <a href="../../index.html" class="back-to-main-button">
+        <span class="arrow-icon">&lt;</span> 메인으로
+    </a>
+
+    <div id="gameContainer">
+        <!-- READY 화면 -->
+        <div id="readyScreen" class="screen">
+            <h1>🎯 점 잡기</h1>
+            <p class="instruction">움직이는 점을 클릭하세요!<br>15초 동안 최대한 많이 잡으세요</p>
+            <button class="startBtn" onclick="startGame()">게임 시작</button>
+        </div>
+
+        <!-- RESULT 화면 -->
+        <div id="resultScreen" class="screen hidden">
+            <h1>🏆 게임 종료</h1>
+            <p class="resultText">잡은 점 개수</p>
+            <div class="finalScore" id="finalScore">0</div>
+            <div class="evaluation" id="evaluation"></div>
+            <div class="bestScore" id="bestScoreDisplay"></div>
+            <button class="startBtn" onclick="resetGame()">다시 하기</button>
+        </div>
+
+        <!-- HUD (점수 및 타이머) -->
+        <div id="hud">
+            <div class="hudItem">점수: <span id="score">0</span></div>
+            <div class="hudItem">시간: <span id="timer">15</span>s</div>
+        </div>
+
+        <!-- 움직이는 점 -->
+        <div id="dot"></div>
+    </div>
+
+    <script>
+        // ========== 게임 상태 및 변수 ==========
+        const GameState = {
+            READY: 'READY',
+            PLAYING: 'PLAYING',
+            RESULT: 'RESULT'
+        };
+
+        let currentState = GameState.READY;
+        let score = 0;
+        let timeLeft = 15;
+        let dotSize = 50; // 초기 점 크기
+        let moveInterval = 1000; // 초기 이동 간격 (ms)
+        let moveTimer = null;
+        let countdownTimer = null;
+        let bestScore = localStorage.getItem('catchTheDotBest') || 0;
+
+        // DOM 요소
+        const gameContainer = document.getElementById('gameContainer');
+        const readyScreen = document.getElementById('readyScreen');
+        const resultScreen = document.getElementById('resultScreen');
+        const hud = document.getElementById('hud');
+        const dot = document.getElementById('dot');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const evaluationDisplay = document.getElementById('evaluation');
+        const bestScoreDisplay = document.getElementById('bestScoreDisplay');
+
+        // 평가 문구 배열
+        const evaluations = [
+            "눈이 빠르네요! 👀",
+            "꽤 잘 잡네요? 🎯",
+            "생각보다 어렵죠? 😅",
+            "반사신경 좋은데요! ⚡",
+            "대단한 집중력이에요! 🔥",
+            "한 번 더 해볼래요? 🎮",
+            "점점 더 빨라지죠? 🚀",
+            "당신은 점 사냥꾼! 🏹"
+        ];
+
+        // ========== 게임 시작 ==========
+        function startGame() {
+            currentState = GameState.PLAYING;
+            score = 0;
+            timeLeft = 15;
+            dotSize = 50;
+            moveInterval = 1000;
+
+            // 화면 전환
+            readyScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            hud.classList.add('show');
+            dot.classList.add('show');
+
+            // UI 업데이트
+            updateScore();
+            updateTimer();
+
+            // 점 초기 위치 설정
+            moveDotToRandomPosition();
+
+            // 점 이동 시작
+            startDotMovement();
+
+            // 카운트다운 시작
+            startCountdown();
+        }
+
+        // ========== 점 이동 로직 ==========
+        function moveDotToRandomPosition() {
+            const containerWidth = gameContainer.clientWidth;
+            const containerHeight = gameContainer.clientHeight;
+
+            // 점이 화면 밖으로 나가지 않도록 여백 확보
+            const margin = dotSize;
+            const maxX = containerWidth - dotSize - margin;
+            const maxY = containerHeight - dotSize - margin;
+
+            const randomX = Math.random() * maxX + margin;
+            const randomY = Math.random() * maxY + margin;
+
+            dot.style.left = randomX + 'px';
+            dot.style.top = randomY + 'px';
+            dot.style.width = dotSize + 'px';
+            dot.style.height = dotSize + 'px';
+        }
+
+        function startDotMovement() {
+            moveTimer = setInterval(() => {
+                moveDotToRandomPosition();
+            }, moveInterval);
+        }
+
+        function stopDotMovement() {
+            clearInterval(moveTimer);
+        }
+
+        // ========== 타이머 로직 ==========
+        function startCountdown() {
+            countdownTimer = setInterval(() => {
+                timeLeft--;
+                updateTimer();
+
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function stopCountdown() {
+            clearInterval(countdownTimer);
+        }
+
+        // ========== 점 클릭 이벤트 ==========
+        dot.addEventListener('click', function(e) {
+            if (currentState !== GameState.PLAYING) return;
+
+            e.stopPropagation(); // 배경 클릭 방지
+
+            // 점수 증가
+            score++;
+            updateScore();
+
+            // 난이도 증가 (5점마다)
+            if (score % 5 === 0) {
+                increaseDifficulty();
+            }
+
+            // 클릭 애니메이션
+            dot.classList.add('clicked');
+            setTimeout(() => {
+                dot.classList.remove('clicked');
+            }, 300);
+
+            // 클릭 효과 생성
+            createClickEffect(e.clientX, e.clientY);
+
+            // 즉시 새 위치로 이동
+            moveDotToRandomPosition();
+        });
+
+        // ========== 클릭 효과 ==========
+        function createClickEffect(x, y) {
+            const effect = document.createElement('div');
+            effect.className = 'clickEffect';
+            effect.style.left = (x - 50) + 'px';
+            effect.style.top = (y - 50) + 'px';
+            effect.style.border = '3px solid #ff6b6b';
+            effect.style.borderRadius = '50%';
+            
+            gameContainer.appendChild(effect);
+
+            setTimeout(() => {
+                effect.remove();
+            }, 600);
+        }
+
+        // ========== 난이도 증가 ==========
+        function increaseDifficulty() {
+            // 점 크기 감소 (최소 20px)
+            if (dotSize > 20) {
+                dotSize -= 3;
+            }
+
+            // 이동 속도 증가 (최소 300ms)
+            if (moveInterval > 300) {
+                moveInterval -= 50;
+                stopDotMovement();
+                startDotMovement();
+            }
+        }
+
+        // ========== UI 업데이트 ==========
+        function updateScore() {
+            scoreDisplay.textContent = score;
+        }
+
+        function updateTimer() {
+            timerDisplay.textContent = timeLeft;
+            
+            // 시간이 5초 이하면 빨간색으로 강조
+            if (timeLeft <= 5) {
+                timerDisplay.style.color = '#ff6b6b';
+            } else {
+                timerDisplay.style.color = '#764ba2';
+            }
+        }
+
+        // ========== 게임 종료 ==========
+        function endGame() {
+            currentState = GameState.RESULT;
+
+            // 타이머 및 이동 중지
+            stopCountdown();
+            stopDotMovement();
+
+            // 점 숨기기
+            dot.classList.remove('show');
+            hud.classList.remove('show');
+
+            // 최고 점수 갱신
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('catchTheDotBest', bestScore);
+            }
+
+            // 결과 화면 표시
+            finalScoreDisplay.textContent = score;
+            evaluationDisplay.textContent = getRandomEvaluation();
+            bestScoreDisplay.textContent = `최고 점수: ${bestScore}점`;
+            
+            resultScreen.classList.remove('hidden');
+        }
+
+        // ========== 랜덤 평가 문구 ==========
+        function getRandomEvaluation() {
+            const randomIndex = Math.floor(Math.random() * evaluations.length);
+            return evaluations[randomIndex];
+        }
+
+        // ========== 게임 재시작 ==========
+        function resetGame() {
+            currentState = GameState.READY;
+            readyScreen.classList.remove('hidden');
+            resultScreen.classList.add('hidden');
+        }
+
+        // ========== 초기화 ==========
+        // 최고 점수 표시
+        if (bestScore > 0) {
+            bestScoreDisplay.textContent = `최고 점수: ${bestScore}점`;
+        }
+    </script>
+</body>
+</html>
