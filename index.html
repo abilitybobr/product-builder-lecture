@@ -216,6 +216,70 @@
             box-shadow: 0 0 20px #fff;
         }
 
+        /* --- Navigation for about page --- */
+        .main-nav {
+            margin-top: 2rem;
+        }
+
+        .main-nav ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .main-nav a {
+            color: var(--neon-yellow);
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 10px 15px;
+            border: 2px solid var(--neon-yellow);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 8px var(--glow-yellow);
+        }
+
+        .main-nav a:hover {
+            background-color: var(--neon-yellow);
+            color: var(--background-color);
+            box-shadow: 0 0 15px var(--glow-yellow);
+            transform: translateY(-2px);
+        }
+
+        /* --- Navigation for about page --- */
+        .main-nav {
+            margin-top: 2rem;
+        }
+
+        .main-nav ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .main-nav a {
+            color: var(--neon-yellow);
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 10px 15px;
+            border: 2px solid var(--neon-yellow);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 8px var(--glow-yellow);
+        }
+
+        .main-nav a:hover {
+            background-color: var(--neon-yellow);
+            color: var(--background-color);
+            box-shadow: 0 0 15px var(--glow-yellow);
+            transform: translateY(-2px);
+        }
+
         /* --- 반응형 디자인 --- */
         @media (max-width: 960px) {
             .portal-header h1 { font-size: 2.8rem; }
@@ -248,6 +312,11 @@
 
     <header class="portal-header">
         <h1>Select Category</h1>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="game/about/miniGameOne.html">클릭 & 반응형 게임 설명</a></li>
+            </ul>
+        </nav>
     </header>
 
     <main class="category-accordion">

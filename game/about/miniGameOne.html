@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>미니게임 소개 | 잠깐 즐기는 웹게임 모음</title>
+  <meta name="description" content="잠깐 머리를 비우고 즐길 수 있는 간단한 웹 미니게임 5종 소개 페이지입니다.">
+  <style>
+      /* --- 기본 설정 (index.html, oneSecondGame.html과 통일) --- */
+      :root {
+          --background-color: #0d0c1d;
+          --card-color: #161a33;
+          --text-color: #e5e5e5;
+          --neon-blue: #00bfff;
+          --neon-pink: #ff00ff;
+          --neon-green: #39ff14;
+          --neon-yellow: #fdfd96;
+          
+          --glow-blue: rgba(0, 191, 255, 0.7);
+          --glow-pink: rgba(255, 0, 255, 0.7);
+          --glow-green: rgba(57, 255, 20, 0.7);
+          --glow-yellow: rgba(253, 253, 150, 0.7);
+      }
+
+      * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+      }
+
+      body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+              Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+          background-color: var(--background-color);
+          color: var(--text-color);
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column; /* Changed to column for content flow */
+          align-items: center;
+          overflow-x: hidden; /* Prevent horizontal scroll */
+          position: relative;
+          padding: 20px; /* Add some padding */
+      }
+
+      /* --- Back to Main Button --- */
+      .back-to-main-button {
+          position: fixed;
+          top: 20px;
+          left: 20px;
+          background: rgba(0, 0, 0, 0.5);
+          color: var(--neon-blue);
+          padding: 10px 15px;
+          border-radius: 5px;
+          text-decoration: none;
+          font-weight: bold;
+          font-size: 1rem;
+          transition: all 0.2s ease;
+          box-shadow: 0 0 8px var(--glow-blue);
+          z-index: 1000;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+      }
+
+      .back-to-main-button:hover {
+          background: var(--neon-blue);
+          color: var(--background-color);
+          box-shadow: 0 0 15px var(--glow-blue);
+          transform: translateY(-2px);
+      }
+
+      .back-to-main-button .arrow-icon {
+          font-size: 1.2em;
+      }
+
+      /* --- Content Styling for miniGameOne.html --- */
+      .content-wrapper {
+          background: var(--card-color);
+          border: 2px solid var(--neon-pink);
+          border-radius: 15px;
+          padding: 2rem;
+          max-width: 900px;
+          width: 100%;
+          margin-top: 60px; /* Space for back button */
+          margin-bottom: 20px;
+          box-shadow: 0 0 15px var(--glow-pink);
+          text-align: left;
+      }
+
+      .content-wrapper h1 {
+          color: var(--neon-yellow);
+          text-shadow: 0 0 10px var(--glow-yellow);
+          font-size: 2.5rem;
+          margin-bottom: 1.5rem;
+          text-align: center;
+      }
+
+      .content-wrapper h2 {
+          color: var(--neon-green);
+          text-shadow: 0 0 8px var(--glow-green);
+          font-size: 1.8rem;
+          margin-top: 2rem;
+          margin-bottom: 1rem;
+      }
+
+      .content-wrapper p {
+          color: var(--text-color);
+          line-height: 1.6;
+          margin-bottom: 1rem;
+          font-size: 1rem;
+      }
+
+      .content-wrapper hr {
+          border: none;
+          border-top: 1px dashed rgba(255, 255, 255, 0.2);
+          margin: 2rem 0;
+      }
+
+      /* Responsive adjustments for content */
+      @media (max-width: 768px) {
+          .content-wrapper {
+              padding: 1.5rem;
+              margin-top: 50px;
+          }
+          .content-wrapper h1 {
+              font-size: 2rem;
+          }
+          .content-wrapper h2 {
+              font-size: 1.5rem;
+          }
+          .content-wrapper p {
+              font-size: 0.9rem;
+          }
+          .back-to-main-button {
+              top: 10px;
+              left: 10px;
+              padding: 8px 12px;
+              font-size: 0.9rem;
+          }
+      }
+  </style>
+</head>
+<body>
+  <!-- 메인 페이지로 돌아가는 버튼 -->
+  <a href="../../index.html" class="back-to-main-button">
+      <span class="arrow-icon">&lt;</span> 메인으로
+  </a>
+  <div class="content-wrapper">
+    <h1>잠깐 즐기는 웹 미니게임 소개</h1>
+    <p>
+      이 사이트는 복잡한 규칙이나 긴 플레이 없이,
+      누구나 짧은 시간 동안 가볍게 즐길 수 있는 HTML 기반 미니게임을 제공합니다.
+      아래는 현재 제공 중인 게임들에 대한 설명입니다.
+    </p>
+
+    <hr>
+
+    <!-- Game 1 -->
+    <section>
+      <h2>1. 1초 클릭 게임</h2>
+      <p>
+        1초 클릭 게임은 화면에 신호가 나타나는 순간,
+        얼마나 빠르게 반응할 수 있는지를 테스트하는 반응 속도 게임입니다.
+      </p>
+      <p>
+        신호가 나타나기 전에는 절대 클릭하면 안 되며,
+        신호가 보인 직후 클릭해야 좋은 기록을 얻을 수 있습니다.
+        아주 짧은 시간 동안 집중력을 끌어올리고 싶을 때 적합한 게임입니다.
+      </p>
+      <p>
+        별도의 조작법 없이 화면을 클릭하는 것만으로 플레이할 수 있어
+        모바일과 PC 모두에서 쉽게 즐길 수 있습니다.
+      </p>
+    </section>
+
+    <hr>
+
+    <!-- Game 2 -->
+    <section>
+      <h2>2. 빨간 버튼 누르지 마</h2>
+      <p>
+        이 게임은 여러 개의 버튼 중에서
+        오직 빨간 버튼만 피해야 하는 심리형 미니게임입니다.
+      </p>
+      <p>
+        빨간 버튼을 클릭하는 순간 게임은 즉시 종료되며,
+        다른 버튼을 클릭할 때마다 점수가 올라갑니다.
+        단순하지만 사람의 본능적인 실수를 유도하는 구조로
+        짧은 시간 동안 웃음을 주는 게임입니다.
+      </p>
+      <p>
+        버튼의 위치와 색상이 계속 바뀌기 때문에
+        집중력과 판단력이 자연스럽게 요구됩니다.
+      </p>
+    </section>
+
+    <hr>
+
+    <!-- Game 3 -->
+    <section>
+      <h2>3. 점 잡기 게임</h2>
+      <p>
+        점 잡기 게임은 화면 위를 빠르게 이동하는 작은 점을
+        제한 시간 안에 최대한 많이 클릭하는 게임입니다.
+      </p>
+      <p>
+        점은 계속해서 위치를 바꾸며 움직이기 때문에
+        시선을 집중하고 마우스나 터치 조작을 정확히 해야 합니다.
+        복잡한 규칙 없이 직관적으로 즐길 수 있는 게임입니다.
+      </p>
+      <p>
+        짧은 플레이 시간 동안 자연스럽게 몰입하게 되어
+        잠깐 머리를 식히기에 적합합니다.
+      </p>
+    </section>
+
+    <hr>
+
+    <!-- Game 4 -->
+    <section>
+      <h2>4. 사라지는 버튼</h2>
+      <p>
+        사라지는 버튼 게임은 클릭하려는 순간
+        버튼이 다른 위치로 이동하는 독특한 미니게임입니다.
+      </p>
+      <p>
+        버튼에 마우스를 올리거나 클릭을 시도하면
+        버튼이 화면의 랜덤한 위치로 이동하기 때문에
+        생각보다 클릭하기가 쉽지 않습니다.
+      </p>
+      <p>
+        단순한 구조이지만 예상치 못한 움직임으로
+        재미와 긴장감을 동시에 느낄 수 있습니다.
+      </p>
+    </section>
+
+    <hr>
+
+    <!-- Game 5 -->
+    <section>
+      <h2>5. 흔들림 참기 게임</h2>
+      <p>
+        흔들림 참기 게임은 화면이 계속 흔들리는 상황 속에서
+        아무것도 하지 않고 버티는 것을 목표로 하는 게임입니다.
+      </p>
+      <p>
+        화면이 흔들리거나 자극적인 효과가 나타나도
+        클릭하지 않고 정해진 시간을 버티면 성공하게 됩니다.
+        반대로 화면을 클릭하면 즉시 실패합니다.
+      </p>
+      <p>
+        단순하지만 의외로 집중력과 인내심을 요구하는 게임으로,
+        짧은 시간 동안 색다른 경험을 제공합니다.
+      </p>
+    </section>
+
+    <hr>
+
+    <p>
+      모든 게임은 별도의 설치 없이 웹 브라우저에서 바로 실행되며,
+      간단한 조작으로 누구나 쉽게 즐길 수 있도록 제작되었습니다.
+    </p>
+  </div>
+</body>
+</html>
