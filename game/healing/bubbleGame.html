@@ -129,6 +129,7 @@
         <p>🫧 스트레스 해소 버블 터뜨리기</p>
         <p>떠오르는 거품을 터뜨리며 마음의 평화를 찾고 스트레스를 해소하세요!</p>
         <p>30초 안에 최대한 많은 버블을 터뜨려보세요.</p>
+        <button id="startButton" class="start-button">START</button>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -136,6 +137,7 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const gameDescription = document.getElementById('gameDescription'); // Get reference to description element
+        const startButton = document.getElementById('startButton'); // Get reference to start button
 
         // Canvas 크기 설정
         function resizeCanvas() {
@@ -288,10 +290,7 @@
 
         // 클릭/터치 이벤트 처리
         function handleClick(x, y) {
-            if (gameState === STATE.READY) {
-                initGame();
-                return;
-            }
+
 
             if (gameState === STATE.GAME_OVER) {
                 gameState = STATE.READY;
@@ -340,6 +339,13 @@
             const x = (touch.clientX - rect.left) * scaleX;
             const y = (touch.clientY - rect.top) * scaleY;
             handleClick(x, y);
+        });
+
+        // Start 버튼 클릭 이벤트
+        startButton.addEventListener('click', () => {
+            if (gameState === STATE.READY || gameState === STATE.GAME_OVER) {
+                initGame();
+            }
         });
 
         // UI 그리기
