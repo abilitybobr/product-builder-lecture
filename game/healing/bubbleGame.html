@@ -30,10 +30,18 @@
             background: var(--background-color); /* Dark theme background */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             position: relative; /* For back button positioning */
+            display: flex; /* Use flexbox to center content */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
         canvas {
             display: block;
             background: linear-gradient(to bottom, var(--background-color), var(--card-color)); /* Dark theme gradient */
+            position: absolute; /* Position canvas absolutely to allow description overlay */
+            top: 0;
+            left: 0;
+            z-index: 1; /* Ensure canvas is behind the description when ready */
         }
 
         /* --- Back to Main Button --- */
@@ -76,6 +84,39 @@
                 font-size: 0.9rem;
             }
         }
+
+        /* --- Game Description --- */
+        #gameDescription {
+            position: absolute; /* Position it on top of the canvas */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            margin-top: 0; /* No margin top, centered with transform */
+            padding: 25px;
+            background: var(--card-color);
+            border: 2px solid var(--neon-pink); /* Using neon-pink for highlight */
+            border-radius: 15px;
+            max-width: 500px;
+            box-shadow: 0 0 15px var(--glow-pink); /* Using glow-pink */
+            text-align: center; /* Center the text within the description box */
+            z-index: 500; /* Ensure it's above the canvas but below back button */
+            color: var(--text-color); /* Ensure description text color is set */
+        }
+
+        #gameDescription p {
+            margin: 10px 0;
+            font-size: 1rem;
+            color: var(--text-color);
+            line-height: 1.6;
+            text-shadow: 0 0 3px rgba(255, 0, 255, 0.3); /* Using pink glow for text shadow */
+        }
+
+        #gameDescription p:first-child {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--neon-pink); /* Using neon-pink for title */
+            text-shadow: 0 0 8px var(--glow-pink);
+        }
     </style>
 </head>
 <body>
@@ -84,10 +125,17 @@
         <span class="arrow-icon">&lt;</span> 메인으로
     </a>
 
+    <div id="gameDescription">
+        <p>🫧 스트레스 해소 버블 터뜨리기</p>
+        <p>떠오르는 거품을 터뜨리며 마음의 평화를 찾고 스트레스를 해소하세요!</p>
+        <p>30초 안에 최대한 많은 버블을 터뜨려보세요.</p>
+    </div>
+
     <canvas id="gameCanvas"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const gameDescription = document.getElementById('gameDescription'); // Get reference to description element
 
         // Canvas 크기 설정
         function resizeCanvas() {
@@ -226,6 +274,7 @@
             gameTime = 30;
             startTime = Date.now();
             lastBubbleTime = 0;
+            gameDescription.style.display = 'none'; // Hide description when game starts
         }
 
         // 거품 생성
@@ -246,6 +295,7 @@
 
             if (gameState === STATE.GAME_OVER) {
                 gameState = STATE.READY;
+                gameDescription.style.display = 'block'; // Show description to restart
                 return;
             }
 
@@ -297,16 +347,7 @@
             ctx.fillStyle = '#e5e5e5'; // Light text color
             ctx.font = 'bold 24px sans-serif';
 
-            if (gameState === STATE.READY) {
-                ctx.textAlign = 'center';
-                ctx.font = 'bold 48px sans-serif';
-                ctx.fillText('버블 터뜨리기', canvas.width / 2, canvas.height / 2 - 50);
-                ctx.font = '24px sans-serif';
-                ctx.fillText('클릭하여 시작', canvas.width / 2, canvas.height / 2 + 20);
-                ctx.font = '18px sans-serif';
-                ctx.fillStyle = '#aaa'; // Slightly brighter informational text
-                ctx.fillText('30초 동안 최대한 많은 거품을 터뜨리세요!', canvas.width / 2, canvas.height / 2 + 60);
-            }
+
 
             if (gameState === STATE.PLAYING) {
                 ctx.textAlign = 'left';
