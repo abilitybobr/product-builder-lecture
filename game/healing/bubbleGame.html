@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>버블 터뜨리기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            overflow: hidden;
+            background: #0d0c1d; /* Dark theme background */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        canvas {
+            display: block;
+            background: linear-gradient(to bottom, #0d0c1d, #161a33); /* Dark theme gradient */
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Canvas 크기 설정
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // 게임 상태
+        const STATE = {
+            READY: 'READY',
+            PLAYING: 'PLAYING',
+            GAME_OVER: 'GAME_OVER'
+        };
+
+        // 게임 변수
+        let gameState = STATE.READY;
+        let score = 0;
+        let bubbles = [];
+        let gameTime = 30;
+        let startTime = 0;
+        let lastBubbleTime = 0;
+        let poppingBubbles = []; // 터지는 애니메이션용
+
+        // 파스텔 색상 배열 (유지, 어두운 배경에 잘 보임)
+        const pastelColors = [
+            'rgba(255, 182, 193, 0.7)', // 파스텔 핑크
+            'rgba(173, 216, 230, 0.7)', // 파스텔 블루
+            'rgba(221, 160, 221, 0.7)', // 파스텔 퍼플
+            'rgba(255, 218, 185, 0.7)', // 파스텔 오렌지
+            'rgba(152, 251, 152, 0.7)', // 파스텔 그린
+            'rgba(255, 255, 153, 0.7)', // 파스텔 옐로우
+            'rgba(255, 192, 203, 0.7)', // 라이트 핑크
+            'rgba(176, 224, 230, 0.7)'  // 파우더 블루
+        ];
+
+        // 거품 클래스
+        class Bubble {
+            constructor() {
+                this.radius = Math.random() * 25 + 15; // 15 ~ 40px
+                this.x = this.radius + Math.random() * (canvas.width - this.radius * 2);
+                this.y = canvas.height + this.radius;
+                this.speed = Math.random() * 2 + 1; // 1 ~ 3px
+                this.color = pastelColors[Math.floor(Math.random() * pastelColors.length)];
+            }
+
+            update() {
+                this.y -= this.speed;
+            }
+
+            draw() {
+                // 거품 그라데이션 효과
+                const gradient = ctx.createRadialGradient(
+                    this.x - this.radius * 0.3,
+                    this.y - this.radius * 0.3,
+                    0,
+                    this.x,
+                    this.y,
+                    this.radius
+                );
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                gradient.addColorStop(0.5, this.color);
+                gradient.addColorStop(1, this.color.replace('0.7', '0.4'));
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                // 거품 테두리
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // 하이라이트
+                ctx.beginPath();
+                ctx.arc(this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.fill();
+            }
+
+            isOffScreen() {
+                return this.y + this.radius < 0;
+            }
+
+            contains(x, y) {
+                const dx = x - this.x;
+                const dy = y - this.y;
+                // 작은 버블의 클릭을 쉽게 하기 위해 10px 여유 추가
+                const hitRadius = this.radius + 10;
+                return Math.sqrt(dx * dx + dy * dy) <= hitRadius;
+            }
+        }
+
+        // 터지는 거품 애니메이션 클래스
+        class PoppingBubble {
+            constructor(x, y, radius, color) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.color = color;
+                this.maxRadius = radius * 1.5;
+                this.alpha = 1;
+                this.growSpeed = 3;
+                this.fadeSpeed = 0.05;
+            }
+
+            update() {
+                this.radius += this.growSpeed;
+                this.alpha -= this.fadeSpeed;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            isDone() {
+                return this.alpha <= 0;
+            }
+        }
+
+        // 게임 초기화
+        function initGame() {
+            gameState = STATE.PLAYING;
+            score = 0;
+            bubbles = [];
+            poppingBubbles = [];
+            gameTime = 30;
+            startTime = Date.now();
+            lastBubbleTime = 0;
+        }
+
+        // 거품 생성
+        function createBubble(currentTime) {
+            const interval = Math.random() * 700 + 500; // 500 ~ 1200ms
+            if (currentTime - lastBubbleTime > interval) {
+                bubbles.push(new Bubble());
+                lastBubbleTime = currentTime;
+            }
+        }
+
+        // 클릭/터치 이벤트 처리
+        function handleClick(x, y) {
+            if (gameState === STATE.READY) {
+                initGame();
+                return;
+            }
+
+            if (gameState === STATE.GAME_OVER) {
+                gameState = STATE.READY;
+                return;
+            }
+
+            if (gameState === STATE.PLAYING) {
+                // 거품 클릭 확인 (뒤에서부터 확인 - 최근 생성된 거품 우선)
+                for (let i = bubbles.length - 1; i >= 0; i--) {
+                    if (bubbles[i].contains(x, y)) {
+                        // 터지는 애니메이션 추가
+                        poppingBubbles.push(new PoppingBubble(
+                            bubbles[i].x,
+                            bubbles[i].y,
+                            bubbles[i].radius,
+                            bubbles[i].color
+                        ));
+                        bubbles.splice(i, 1);
+                        score++;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 마우스 이벤트
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            // CSS 크기와 실제 캔버스 크기 비율 계산
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            handleClick(x, y);
+        });
+
+        // 터치 이벤트
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            // CSS 크기와 실제 캔버스 크기 비율 계산
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            handleClick(x, y);
+        });
+
+        // UI 그리기
+        function drawUI() {
+            ctx.fillStyle = '#e5e5e5'; // Light text color
+            ctx.font = 'bold 24px sans-serif';
+
+            if (gameState === STATE.READY) {
+                ctx.textAlign = 'center';
+                ctx.font = 'bold 48px sans-serif';
+                ctx.fillText('버블 터뜨리기', canvas.width / 2, canvas.height / 2 - 50);
+                ctx.font = '24px sans-serif';
+                ctx.fillText('클릭하여 시작', canvas.width / 2, canvas.height / 2 + 20);
+                ctx.font = '18px sans-serif';
+                ctx.fillStyle = '#aaa'; // Slightly brighter informational text
+                ctx.fillText('30초 동안 최대한 많은 거품을 터뜨리세요!', canvas.width / 2, canvas.height / 2 + 60);
+            }
+
+            if (gameState === STATE.PLAYING) {
+                ctx.textAlign = 'left';
+                ctx.font = 'bold 28px sans-serif';
+                ctx.fillText(`점수: ${score}`, 20, 40);
+
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const remaining = Math.max(0, gameTime - elapsed);
+                ctx.textAlign = 'right';
+                ctx.fillText(`시간: ${remaining}초`, canvas.width - 20, 40);
+
+                // 시간 종료 체크
+                if (remaining <= 0) {
+                    gameState = STATE.GAME_OVER;
+                }
+            }
+
+            if (gameState === STATE.GAME_OVER) {
+                // 반투명 오버레이
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'; // Darker semi-transparent overlay
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#e5e5e5'; // Light text color
+                ctx.textAlign = 'center';
+                ctx.font = 'bold 48px sans-serif';
+                ctx.fillText('게임 종료!', canvas.width / 2, canvas.height / 2 - 60);
+                ctx.font = 'bold 64px sans-serif';
+                ctx.fillStyle = '#ff00ff'; // Neon pink for score
+                ctx.fillText(`${score}개`, canvas.width / 2, canvas.height / 2 + 20);
+                ctx.font = '24px sans-serif';
+                ctx.fillStyle = '#aaa'; // Brighter informational text
+                ctx.fillText('클릭하여 다시 시작', canvas.width / 2, canvas.height / 2 + 80);
+            }
+        }
+
+        // 게임 루프
+        function gameLoop() {
+            // 화면 지우기
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const currentTime = Date.now();
+
+            if (gameState === STATE.PLAYING) {
+                // 거품 생성
+                createBubble(currentTime);
+
+                // 거품 업데이트 및 그리기
+                for (let i = bubbles.length - 1; i >= 0; i--) {
+                    bubbles[i].update();
+                    bubbles[i].draw();
+
+                    // 화면 밖으로 나간 거품 제거
+                    if (bubbles[i].isOffScreen()) {
+                        bubbles.splice(i, 1);
+                    }
+                }
+
+                // 터지는 애니메이션 업데이트 및 그리기
+                for (let i = poppingBubbles.length - 1; i >= 0; i--) {
+                    poppingBubbles[i].update();
+                    poppingBubbles[i].draw();
+
+                    if (poppingBubbles[i].isDone()) {
+                        poppingBubbles.splice(i, 1);
+                    }
+                }
+            }
+
+            // UI 그리기
+            drawUI();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // 게임 시작
+        gameLoop();
+    </script>
+</body>
+</html>
