@@ -39,6 +39,95 @@
             padding: 2rem;
         }
 
+        /* --- Global Hamburger Menu --- */
+        .hamburger-menu-global {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            background: var(--neon-blue);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px;
+            z-index: 1002; /* Ensure it's above other content */
+            box-shadow: 0 0 10px var(--glow-blue);
+        }
+
+        .hamburger-menu-global .bar {
+            display: block;
+            width: 80%;
+            height: 3px;
+            background-color: var(--background-color); /* Use background color for bars */
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        /* --- Global Side Navigation --- */
+        .global-side-navigation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px; /* Slightly wider than miniGameOne's nav */
+            height: 100vh;
+            background: var(--card-color);
+            border-right: 2px solid var(--neon-blue);
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+            transform: translateX(-100%); /* Hidden by default */
+            transition: transform 0.3s ease-in-out;
+            z-index: 1001; /* Below hamburger menu */
+            padding-top: 80px; /* Space for hamburger/header */
+            overflow-y: auto; /* Enable scrolling for long content */
+        }
+
+        .global-side-navigation.active {
+            transform: translateX(0); /* Show when active */
+        }
+
+        body.global-nav-active {
+            overflow-x: hidden; /* Prevent horizontal scroll when global nav is open */
+        }
+
+        .global-side-navigation h2 {
+            color: var(--neon-yellow);
+            text-shadow: 0 0 8px var(--glow-yellow);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            padding: 0 1.5rem;
+            text-align: center;
+        }
+
+        .global-side-navigation ul {
+            list-style: none;
+        }
+
+        .global-side-navigation li a {
+            display: block;
+            padding: 0.8rem 1.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            border-left: 5px solid transparent;
+        }
+
+        .global-side-navigation li a:hover {
+            background-color: rgba(0, 191, 255, 0.1);
+            color: var(--neon-blue);
+            border-left-color: var(--neon-blue);
+        }
+
+        /* Responsive adjustments for global navigation */
+        @media (max-width: 768px) {
+            body.global-nav-active {
+                overflow-x: hidden; /* Prevent horizontal scroll when nav is open */
+            }
+        }
+        
         /* --- 헤더 --- */
         .portal-header {
             text-align: center;
@@ -298,6 +387,22 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_ADSENSE_PUBLISHER_ID" crossorigin="anonymous"></script>
 </head>
 <body>
+    <button class="hamburger-menu-global">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </button>
+
+    <nav class="global-side-navigation">
+        <h2>미니게임 소개</h2>
+        <ul>
+            <li><a href="game/about/miniGameOne.html#game1">1초 클릭 게임</a></li>
+            <li><a href="game/about/miniGameOne.html#game2">빨간 버튼 누르지 마</a></li>
+            <li><a href="game/about/miniGameOne.html#game3">점 잡기 게임</a></li>
+            <li><a href="game/about/miniGameOne.html#game4">사라지는 버튼</a></li>
+            <li><a href="game/about/miniGameOne.html#game5">흔들림 참기 게임</a></li>
+        </ul>
+    </nav>
     <!-- Google AdSense Banner Placeholder -->
     <div style="text-align:center; margin-bottom: 20px;">
         <ins class="adsbygoogle"
@@ -312,11 +417,6 @@
 
     <header class="portal-header">
         <h1>Select Category</h1>
-        <nav class="main-nav">
-            <ul>
-                <li><a href="game/about/miniGameOne.html">클릭 & 반응형 게임 설명</a></li>
-            </ul>
-        </nav>
     </header>
 
     <main class="category-accordion">
