@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>잔디 깎기 힐링</title>
+    <style>
+        /* --- 기본 설정 --- */
+        :root {
+            --background-color: #0d0c1d;
+            --card-color: #161a33;
+            --text-color: #e5e5e5;
+            --neon-blue: #00bfff;
+            --neon-pink: #ff00ff;
+            --neon-green: #39ff14;
+            --neon-yellow: #fdfd96;
+            
+            --glow-blue: rgba(0, 191, 255, 0.7);
+            --glow-pink: rgba(255, 0, 255, 0.7);
+            --glow-green: rgba(57, 255, 20, 0.7);
+            --glow-yellow: rgba(253, 253, 150, 0.7);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background-color); /* Use global background */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+            position: relative; /* For back button positioning */
+        }
+
+        /* --- Back to Main Button --- */
+        .back-to-main-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--neon-blue);
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 8px var(--glow-blue);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-to-main-button:hover {
+            background: var(--neon-blue);
+            color: var(--background-color);
+            box-shadow: 0 0 15px var(--glow-blue);
+            transform: translateY(-2px);
+        }
+
+        .back-to-main-button .arrow-icon {
+            font-size: 1.2em;
+        }
+
+        /* --- Game Description --- */
+        #gameDescription {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 25px;
+            background: var(--card-color);
+            border: 2px solid var(--neon-green); /* Using neon-green for highlight */
+            border-radius: 15px;
+            max-width: 500px;
+            box-shadow: 0 0 15px var(--glow-green); /* Using glow-green */
+            text-align: center;
+            z-index: 500;
+            color: var(--text-color);
+        }
+
+        #gameDescription p {
+            margin: 10px 0;
+            font-size: 1rem;
+            color: var(--text-color);
+            line-height: 1.6;
+            text-shadow: 0 0 3px rgba(57, 255, 20, 0.3); /* Using green glow for text shadow */
+        }
+
+        #gameDescription p:first-child {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--neon-green); /* Using neon-green for title */
+            text-shadow: 0 0 8px var(--glow-green);
+        }
+
+        #gameDescription .start-button { /* Style for start button in description */
+            background: var(--neon-green);
+            color: var(--background-color);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 8px var(--glow-green);
+            margin-top: 15px;
+        }
+
+        #gameDescription .start-button:hover {
+            background: #fff;
+            box-shadow: 0 0 20px var(--glow-green);
+        }
+
+        .container {
+            background: var(--card-color); /* Use global card color */
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            z-index: 10; /* Ensure container is above description after game starts */
+            display: none; /* Hide until game starts */
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .progress-container {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .progress-label {
+            font-size: 14px;
+            color: var(--text-color); /* Use global text color */
+            margin-bottom: 5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-green) 0%, #22c55e 100%); /* Use neon-green */
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--background-color);
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .stage-info {
+            text-align: right;
+        }
+
+        .stage-label {
+            font-size: 14px;
+            color: var(--text-color); /* Use global text color */
+        }
+
+        .stage-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--neon-green); /* Use neon-green */
+        }
+
+        .difficulty-info {
+            margin-top: 5px;
+            font-size: 11px;
+            color: #999;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            cursor: crosshair;
+            touch-action: none;
+            background-color: var(--background-color); /* Set a background for canvas */
+        }
+
+        .clear-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(34, 197, 94, 0.95); /* Original green, might be adjusted later */
+            color: white;
+            padding: 30px 60px;
+            border-radius: 20px;
+            font-size: 36px;
+            font-weight: bold;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 50; /* Ensure it's above canvas */
+        }
+
+        .clear-message.show {
+            opacity: 1;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, var(--neon-yellow) 0%, #d97706 100%); /* Use neon-yellow */
+            color: var(--background-color);
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, var(--neon-green) 0%, #16a34a 100%); /* Use neon-green */
+            color: var(--background-color);
+        }
+
+        .next-btn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+            color: #888;
+        }
+
+        .next-btn:disabled:hover {
+            transform: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .back-to-main-button {
+                top: 10px;
+                left: 10px;
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .stage-number {
+                font-size: 24px;
+            }
+
+            .clear-message {
+                font-size: 24px;
+                padding: 20px 40px;
+            }
+
+            button {
+                padding: 12px 24px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 메인 페이지로 돌아가는 버튼 -->
+    <a href="../../index.html" class="back-to-main-button">
+        <span class="arrow-icon">&lt;</span> 메인으로
+    </a>
+
+    <div id="gameDescription">
+        <p>🌿 마음을 평온하게, 잔디 깎기 힐링</p>
+        <p>잔디를 깎으며 스트레스를 해소하고 마음의 평화를 찾아보세요.</p>
+        <p>모든 잔디를 깨끗하게 깎아 다음 스테이지로 나아가세요!</p>
+        <button id="startButton" class="start-button">START</button>
+    </div>
+
+    <div class="container" id="gameContainer">
+        <!-- 상단 헤더 -->
+        <div class="header">
+            <div class="progress-container">
+                <div class="progress-label">진행률</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill">0%</div>
+                </div>
+            </div>
+            <div class="stage-info">
+                <div class="stage-label">스테이지</div>
+                <div class="stage-number" id="stageNumber">1</div>
+                <div class="difficulty-info" id="difficultyInfo">브러시: 25px</div>
+            </div>
+        </div>
+
+        <!-- 캔버스 영역 -->
+        <div class="canvas-container">
+            <canvas id="gameCanvas"></canvas>
+            <div class="clear-message" id="clearMessage">🎉 클리어!</div>
+        </div>
+
+        <!-- 하단 컨트롤 -->
+        <div class="controls">
+            <button class="reset-btn" id="resetBtn">🔄 리셋</button>
+            <button class="next-btn" id="nextBtn" disabled>➡️ 다음 스테이지</button>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // 게임 상태 관리
+        // ========================================
+        const game = {
+            stage: 1,
+            isDrawing: false,
+            isCleared: false,
+            brushRadius: 25,
+            clearThreshold: 85, // 클리어 기준 (%) - 스테이지마다 변경됨
+            canvas: null,
+            ctx: null,
+            grassLayer: null,
+            grassCtx: null
+        };
+
+        // ========================================
+        // 초기화
+        // ========================================
+        function init() {
+            game.canvas = document.getElementById('gameCanvas');
+            game.ctx = game.canvas.getContext('2d', { willReadFrequently: true });
+            
+            // 잔디 레이어 생성 (오프스크린 캔버스)
+            game.grassLayer = document.createElement('canvas');
+            game.grassCtx = game.grassLayer.getContext('2d');
+
+            // 이벤트 리스너 등록
+            setupEventListeners();
+
+            // 게임 시작
+            // startStage(); // This will now be called by the startButton
+            
+            // 리사이즈 이벤트 (윈도우 크기 변경 시에만)
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    resizeCanvas();
+                    // Only draw grass if game is playing, otherwise description is shown
+                    if (document.getElementById('gameContainer').style.display !== 'none') {
+                        drawGrass();
+                        render();
+                    }
+                }, 200);
+            });
+
+            // Handle start button click
+            document.getElementById('startButton').addEventListener('click', startGame);
+        }
+
+        function startGame() {
+            document.getElementById('gameDescription').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+            startStage();
+            console.log("Game started. Reset and Next Stage buttons should now be visible.");
+        }
+
+        // ========================================
+        // 캔버스 크기 조정
+        // ========================================
+        function resizeCanvas() {
+            const container = game.canvas.parentElement;
+            const width = container.clientWidth;
+            const height = Math.min(width * 0.75, 600); // 고정 크기
+
+            game.canvas.width = width;
+            game.canvas.height = height;
+
+            if (game.grassLayer) {
+                game.grassLayer.width = width;
+                game.grassLayer.height = height;
+            }
+        }
+
+        // ========================================
+        // 잔디 그리기 (초록색 텍스처)
+        // ========================================
+        function drawGrass() {
+            const ctx = game.grassCtx;
+            const canvas = game.grassLayer;
+
+            // 캔버스 전체를 투명하게 초기화
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 스테이지별 잔디 영역 크기 계산
+            // 스테이지 1: 30%, 스테이지 2: 40%, 스테이지 3: 50%...
+            const grassAreaPercentage = Math.min(90, 30 + (game.stage - 1) * 10); // 최대 90%
+            
+            // 중앙에 배치할 잔디 영역 크기
+            const grassWidth = canvas.width * (grassAreaPercentage / 100);
+            const grassHeight = canvas.height * (grassAreaPercentage / 100);
+            
+            // 중앙 정렬을 위한 시작 위치
+            const startX = (canvas.width - grassWidth) / 2;
+            const startY = (canvas.height - grassHeight) / 2;
+
+            // 기본 초록색 배경 (잔디 영역만)
+            ctx.fillStyle = '#22c55e';
+            ctx.fillRect(startX, startY, grassWidth, grassHeight);
+
+            // 텍스처 추가 (랜덤 작은 점들) - 잔디 영역 내에만
+            const textureCount = 2000;
+            
+            for (let i = 0; i < textureCount; i++) {
+                const x = startX + Math.random() * grassWidth;
+                const y = startY + Math.random() * grassHeight;
+                const brightness = Math.random() * 30 - 15;
+                
+                ctx.fillStyle = `rgb(${34 + brightness}, ${197 + brightness}, ${94 + brightness})`;
+                ctx.fillRect(x, y, 2, 2);
+            }
+        }
+
+        // ========================================
+        // 화면 렌더링
+        // ========================================
+        function render() {
+            // 배경 (잔디가 없는 부분) - 부드러운 회색
+            game.ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--background-color'); /* Use global background color */
+            game.ctx.fillRect(0, 0, game.canvas.width, game.canvas.height);
+
+            // 잔디 레이어 그리기
+            game.ctx.drawImage(game.grassLayer, 0, 0);
+        }
+
+        // ========================================
+        // 브러시로 잔디 제거
+        // ========================================
+        function eraseGrass(x, y) {
+            const ctx = game.grassCtx;
+            
+            // 부드러운 원형 브러시
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, game.brushRadius);
+            gradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
+            gradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.8)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(x, y, game.brushRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+
+            render();
+            updateProgress();
+        }
+
+        // ========================================
+        // 진행률 계산
+        // ========================================
+        function updateProgress() {
+            const imageData = game.grassCtx.getImageData(0, 0, game.grassLayer.width, game.grassLayer.height);
+            const pixels = imageData.data;
+            
+            // 스테이지별 잔디 영역 크기 계산 (drawGrass와 동일한 로직)
+            const grassAreaPercentage = Math.min(90, 30 + (game.stage - 1) * 10);
+            const grassWidth = game.grassLayer.width * (grassAreaPercentage / 100);
+            const grassHeight = game.grassLayer.height * (grassAreaPercentage / 100);
+            const startX = Math.floor((game.grassLayer.width - grassWidth) / 2);
+            const startY = Math.floor((game.grassLayer.height - grassHeight) / 2);
+            const endX = Math.floor(startX + grassWidth);
+            const endY = Math.floor(startY + grassHeight);
+            
+            let totalGrassPixels = 0;
+            let clearedGrassPixels = 0;
+
+            // 잔디 영역 내의 픽셀만 계산
+            for (let y = startY; y < endY; y++) {
+                for (let x = startX; x < endX; x++) {
+                    const index = (y * game.grassLayer.width + x) * 4;
+                    const alpha = pixels[index + 3];
+                    
+                    // 원래 잔디가 있던 픽셀인지 확인 (알파값이 있으면 잔디)
+                    if (alpha > 0) {
+                        totalGrassPixels++;
+                        // 알파값이 128 미만이면 제거된 것으로 간주
+                        if (alpha < 128) {
+                            clearedGrassPixels++;
+                        }
+                    } else {
+                        // 완전히 투명한 픽셀은 제거된 것으로 간주
+                        totalGrassPixels++;
+                        clearedGrassPixels++;
+                    }
+                }
+            }
+
+            // 진행률 계산 (잔디 영역 기준)
+            const progress = totalGrassPixels > 0 
+                ? Math.round((clearedGrassPixels / totalGrassPixels) * 100) 
+                : 0;
+            
+            // UI 업데이트
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = progress + '%';
+            progressFill.textContent = progress + '%';
+
+            // 클리어 체크
+            if (progress >= game.clearThreshold && !game.isCleared) {
+                game.isCleared = true;
+                showClearMessage();
+            }
+        }
+
+        // ========================================
+        // 클리어 메시지 표시
+        // ========================================
+        function showClearMessage() {
+            const message = document.getElementById('clearMessage');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            message.classList.add('show');
+            nextBtn.disabled = false;
+
+            setTimeout(() => {
+                message.classList.remove('show');
+            }, 2000);
+        }
+
+        // ========================================
+        // 스테이지 시작
+        // ========================================
+        function startStage() {
+            game.isCleared = false;
+            
+            // 스테이지에 따른 난이도 조정
+            // 1. 캔버스 크기는 고정, 잔디 영역만 증가
+            resizeCanvas();
+            
+            // 2. 브러시 크기 조정 (적당한 크기 유지)
+            game.brushRadius = Math.max(20, 30 - (game.stage - 1) * 1.5);
+            
+            // 3. 클리어 기준 증가 (85% → 87% → 89%...)
+            game.clearThreshold = Math.min(95, 85 + (game.stage - 1) * 2);
+            
+            // 4. 잔디 영역 크기 계산
+            const grassAreaPercentage = Math.min(90, 30 + (game.stage - 1) * 10);
+            
+            // UI 업데이트
+            document.getElementById('stageNumber').textContent = game.stage;
+            document.getElementById('nextBtn').disabled = true;
+            
+            // 진행률 초기화
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = '0%';
+            progressFill.textContent = '0%';
+            
+            // 진행률 라벨 업데이트 (클리어 기준 표시)
+            document.querySelector('.progress-label').textContent = `진행률 (목표: ${game.clearThreshold}%)`;
+            
+            // 난이도 정보 업데이트 - 영역 크기도 표시
+            document.getElementById('difficultyInfo').textContent = `브러시: ${Math.round(game.brushRadius)}px | 잔디 영역: ${grassAreaPercentage}%`;
+            
+            // 잔디 그리기
+            drawGrass();
+            render();
+            
+            // 초기 진행률 계산 (0%로 표시되어야 함)
+            updateProgress();
+        }
+
+        // ========================================
+        // 이벤트 리스너 설정
+        // ========================================
+        function setupEventListeners() {
+            const canvas = game.canvas;
+
+            // 마우스 이벤트
+            canvas.addEventListener('mousedown', handleStart);
+            canvas.addEventListener('mousemove', handleMove);
+            canvas.addEventListener('mouseup', handleEnd);
+            canvas.addEventListener('mouseleave', handleEnd);
+
+            // 터치 이벤트 (모바일)
+            canvas.addEventListener('touchstart', handleStart);
+            canvas.addEventListener('touchmove', handleMove);
+            canvas.addEventListener('touchend', handleEnd);
+            canvas.addEventListener('touchcancel', handleEnd);
+
+            // 버튼 이벤트
+            document.getElementById('resetBtn').addEventListener('click', resetStage);
+            document.getElementById('nextBtn').addEventListener('click', nextStage);
+        }
+
+        // ========================================
+        // 입력 시작
+        // ========================================
+        function handleStart(e) {
+            e.preventDefault();
+            game.isDrawing = true;
+            
+            const pos = getPosition(e);
+            eraseGrass(pos.x, pos.y);
+        }
+
+        // ========================================
+        // 입력 이동
+        // ========================================
+        function handleMove(e) {
+            e.preventDefault();
+            
+            if (!game.isDrawing) return;
+            
+            const pos = getPosition(e);
+            eraseGrass(pos.x, pos.y);
+        }
+
+        // ========================================
+        // 입력 종료
+        // ========================================
+        function handleEnd(e) {
+            e.preventDefault();
+            game.isDrawing = false;
+        }
+
+        // ========================================
+        // 마우스/터치 위치 계산
+        // ========================================
+        function getPosition(e) {
+            const rect = game.canvas.getBoundingClientRect();
+            const scaleX = game.canvas.width / rect.width;
+            const scaleY = game.canvas.height / rect.height;
+
+            let clientX, clientY;
+
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        // ========================================
+        // 스테이지 리셋 (현재 스테이지 처음부터)
+        // ========================================
+        function resetStage() {
+            // 클리어 메시지 숨김
+            const message = document.getElementById('clearMessage');
+            message.classList.remove('show');
+            
+            game.isCleared = false;
+            document.getElementById('nextBtn').disabled = true;
+            
+            // 진행률 초기화
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = '0%';
+            progressFill.textContent = '0%';
+            
+            drawGrass();
+            render();
+            updateProgress();
+        }
+
+        // ========================================
+        // 다음 스테이지
+        // ========================================
+        function nextStage() {
+            // 클리어 메시지 즉시 숨김
+            const message = document.getElementById('clearMessage');
+            message.classList.remove('show');
+            
+            game.stage++;
+            startStage();
+        }
+
+        // ========================================
+        // 게임 시작
+        // ========================================
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
